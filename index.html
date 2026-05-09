@@ -1928,6 +1928,118 @@
       }
     }
 
+    /* FIX FINAL: nav bawah diperbesar + icon sesuai menu tanpa ubah logic */
+    .app {
+      padding-bottom: 126px;
+    }
+
+    .bottom-nav {
+      width: min(760px, 95%);
+      bottom: 14px;
+      gap: 10px;
+      padding: 11px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 20px 55px rgba(131, 24, 67, 0.22);
+    }
+
+    .nav-btn {
+      min-height: 64px;
+      border-radius: 20px;
+      padding: 9px 7px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      line-height: 1.1;
+      color: #9d174d;
+    }
+
+    .nav-icon {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: #fce7f3;
+      font-size: 18px;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(219, 39, 119, 0.08);
+    }
+
+    .nav-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .nav-btn.active .nav-icon {
+      background: rgba(255, 255, 255, 0.22);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+    }
+
+    .nav-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    @media screen and (max-width: 480px) {
+      .app {
+        padding-bottom: 132px !important;
+      }
+
+      .bottom-nav {
+        width: calc(100% - 14px) !important;
+        bottom: 8px !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        border-radius: 22px !important;
+      }
+
+      .nav-btn {
+        min-height: 58px !important;
+        border-radius: 16px !important;
+        padding: 7px 3px !important;
+        font-size: inherit !important;
+      }
+
+      .nav-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 12px;
+        font-size: 16px;
+      }
+
+      .nav-label {
+        font-size: 11px;
+      }
+
+      .toast {
+        bottom: 88px !important;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .bottom-nav {
+        gap: 5px !important;
+        padding: 7px !important;
+      }
+
+      .nav-btn {
+        min-height: 56px !important;
+      }
+
+      .nav-icon {
+        width: 26px;
+        height: 26px;
+        font-size: 15px;
+      }
+
+      .nav-label {
+        font-size: 10px;
+      }
+    }
+
     @media print {
       body { background: #fff; }
       .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
@@ -1948,6 +2060,7 @@
         </div>
         <div class="hero-actions">
           <button class="printer-logo-btn" type="button" id="printerBtn" aria-label="Cetak List Belanja" title="Cetak List Belanja">🖨️</button>
+          <button class="printer-logo-btn" type="button" id="refreshBtn" aria-label="Refresh Data" title="Refresh Data">🔄</button>
           <button class="reset-top" type="button" id="resetBtn">Reset</button>
         </div>
       </div>
@@ -2110,11 +2223,23 @@
     
   </main>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn active" type="button" data-page="home">Home</button>
-    <button class="nav-btn" type="button" data-page="list">Supplier</button>
-    <button class="nav-btn" type="button" data-page="pending">Belum</button>
-    <button class="nav-btn" type="button" data-page="budget">Budget</button>
+  <nav class="bottom-nav" aria-label="Navigasi utama">
+    <button class="nav-btn active" type="button" data-page="home" aria-label="Buka Home">
+      <span class="nav-icon" aria-hidden="true">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="list" aria-label="Buka Supplier">
+      <span class="nav-icon" aria-hidden="true">🏪</span>
+      <span class="nav-label">Supplier</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="pending" aria-label="Buka Barang Belum Selesai">
+      <span class="nav-icon" aria-hidden="true">⏳</span>
+      <span class="nav-label">Belum</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="budget" aria-label="Buka Kalkulator Budget">
+      <span class="nav-icon" aria-hidden="true">🧮</span>
+      <span class="nav-label">Budget</span>
+    </button>
   </nav>
 
   <div class="toast" id="toast">Tersimpan</div>
@@ -2187,6 +2312,7 @@
     const formTitle = document.getElementById("formTitle");
     const submitBtn = document.getElementById("submitBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
     const nameInput = document.getElementById("name");
     const supplierInput = document.getElementById("supplierName");
     const kodiPriceInput = document.getElementById("kodiPrice");
@@ -4014,6 +4140,15 @@
     });
 
     resetBtn.addEventListener("click", resetForm);
+    if (refreshBtn) refreshBtn.addEventListener("click", async () => {
+      try {
+        await refreshItems();
+        showToast("Data direfresh");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal refresh data bro. Coba tutup lalu buka lagi.");
+      }
+    });
     if (clearDataKeepMasterBtn) clearDataKeepMasterBtn.addEventListener("click", clearAllDataKeepMaster);
     searchInput.addEventListener("input", renderList);
     statusFilter.addEventListener("change", renderList);
