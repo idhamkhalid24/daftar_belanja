@@ -298,6 +298,11 @@
       background: #fff7fb;
       border-radius: 14px;
       padding: 9px;
+      overflow: visible;
+    }
+
+    .form-card {
+      overflow: visible;
     }
 
     .variant-head {
@@ -316,6 +321,7 @@
     .variant-list {
       display: grid;
       gap: 7px;
+      overflow: visible;
     }
 
     .variant-row {
@@ -323,6 +329,8 @@
       grid-template-columns: 1fr 82px 38px;
       gap: 6px;
       align-items: end;
+      scroll-margin-top: 120px;
+      scroll-margin-bottom: 120px;
     }
 
     .variant-row label {
@@ -423,6 +431,51 @@
       gap: 6px;
       flex-wrap: wrap;
       justify-content: flex-end;
+    }
+
+    .variant-tools {
+      display: grid;
+      grid-template-columns: 1fr 82px 38px;
+      gap: 6px;
+      align-items: stretch;
+      margin: 0 0 7px;
+    }
+
+    .add-color-btn {
+      grid-column: 1 / 2;
+      min-height: 44px;
+      border-radius: 14px;
+      padding: 10px 13px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      box-shadow: 0 8px 18px rgba(219, 39, 119, 0.18);
+      justify-content: flex-start;
+    }
+
+    .add-color-btn:active {
+      background: var(--primary-dark);
+      transform: scale(0.99);
+    }
+
+    .add-color-btn,
+    .saved-color-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-color-btn {
+      justify-content: flex-start;
+    }
+
+    .saved-color-btn {
+      grid-column: 2 / 4;
+      min-height: 44px;
+      border-radius: 14px;
+      padding: 10px 9px;
+      font-size: 12px;
     }
 
     .toolbar {
@@ -821,7 +874,7 @@
 
       .app {
         width: 100%;
-        padding: 6px 7px 78px;
+        padding: 6px 7px 112px;
       }
 
       .hero {
@@ -972,6 +1025,26 @@
 
       .variant-actions {
         gap: 4px;
+      }
+
+      .variant-tools {
+        grid-template-columns: minmax(0, 1fr) 62px 32px;
+        gap: 4px;
+        margin-bottom: 5px;
+      }
+
+      .add-color-btn {
+        min-height: 38px;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 11.5px;
+      }
+
+      .saved-color-btn {
+        min-height: 38px;
+        border-radius: 10px;
+        padding: 8px 6px;
+        font-size: 10px;
       }
 
       .small-btn,
@@ -1230,6 +1303,10 @@
         justify-content: flex-start;
       }
 
+      .variant-tools {
+        grid-template-columns: minmax(0, 1fr) 64px 32px;
+      }
+
       .toolbar {
         grid-template-columns: 1fr;
       }
@@ -1451,13 +1528,15 @@
           <div class="variant-box">
             <div class="variant-head">
               <strong>Warna dan Jumlah Pcs</strong>
-              <div class="variant-actions">
-                <button class="small-btn" type="button" data-saved-target="colorSavedPanel">Warna ▾</button>
-                <button class="small-btn" type="button" id="addVariantBtn">+ Warna</button>
-              </div>
             </div>
-            <div class="variant-list" id="variantList"></div>
+
+            <div class="variant-tools">
+              <button class="small-btn add-color-btn" type="button" id="addVariantBtn">+ Warna</button>
+              <button class="small-btn saved-color-btn" type="button" data-saved-target="colorSavedPanel">Warna ▾</button>
+            </div>
+
             <div class="saved-panel" id="colorSavedPanel"></div>
+            <div class="variant-list" id="variantList"></div>
             
           </div>
 
@@ -1916,6 +1995,7 @@
 
       row.append(colorWrap, qtyWrap, remove);
       variantList.appendChild(row);
+      return row;
     }
 
     function setVariantRows(variants) {
@@ -2097,7 +2177,19 @@
       if (event.target.value.trim()) colorSavedPanel.classList.add("show");
     });
 
-    addVariantBtn.addEventListener("click", () => addVariantRow());
+    addVariantBtn.addEventListener("click", () => {
+      const row = addVariantRow();
+      const colorInput = row ? row.querySelector(".variant-color") : null;
+      if (colorInput) {
+        activeColorInput = colorInput;
+        colorInput.focus({ preventScroll: true });
+      }
+      setTimeout(() => {
+        if (row && row.scrollIntoView) {
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 180);
+    });
     kodiPriceInput.addEventListener("input", formatKodiPriceInput);
     kodiPriceInput.addEventListener("blur", formatKodiPriceInput);
 
