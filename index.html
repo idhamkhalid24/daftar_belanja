@@ -2087,7 +2087,7 @@
             <button class="btn btn-primary" type="button" id="calculateBudgetBtn">Hitung Budget</button>
             <button class="btn btn-light" type="button" id="clearBudgetBtn">Reset</button>
           </div>
-          <div class="budget-note">Hitungan memakai barang yang belum dibeli dan sudah punya harga kodian.</div>
+          <div class="budget-note">Hitungan memakai nominal pojok kanan card barang dari data yang belum dibeli.</div>
         </div>
         <div class="list budget-list" id="budgetResultList"></div>
       </section>
@@ -3397,22 +3397,31 @@
       const rows = [];
       sortItems(items).forEach(rawItem => {
         const item = normalizeItem(rawItem);
-        item.variants.forEach((variant, variantIndex) => {
-          if (variant.done) return;
-          const pcsPrice = getPcsPrice(item);
-          const amount = Math.round((Number(variant.qty) || 0) * pcsPrice);
-          rows.push({
-            key: getVariantSelectionKey(item, variantIndex),
-            itemId: item.id,
-            variantIndex,
-            supplier: getSupplierKey(item),
-            name: item.name || "Tanpa nama",
-            color: variant.colorName || "Tanpa warna",
-            qty: Math.max(1, Number(variant.qty) || 1),
-            pcsPrice,
-            amount,
-            priority: item.priority || "Sedang"
-          });
+        const pendingVariants = item.variants
+          .map((variant, variantIndex) => ({ variant, variantIndex }))
+          .filter(entry => !entry.variant.done);
+
+        if (!pendingVariants.length) return;
+
+        const pcsPrice = getPcsPrice(item);
+        const amount = Math.round(getPendingNominal(item));
+        const qty = getPendingQty(item);
+        const colors = pendingVariants
+          .map(entry => entry.variant.colorName || "Tanpa warna")
+          .join(", ");
+        const keys = pendingVariants.map(entry => getVariantSelectionKey(item, entry.variantIndex));
+
+        rows.push({
+          key: item.id,
+          keys,
+          itemId: item.id,
+          supplier: getSupplierKey(item),
+          name: item.name || "Tanpa nama",
+          color: colors || "Tanpa warna",
+          qty,
+          pcsPrice,
+          amount,
+          priority: item.priority || "Sedang"
         });
       });
       return rows;
@@ -3488,10 +3497,16 @@
     function selectBudgetRecommendation(rows) {
       if (!rows.length) return showToast("Belum ada rekomendasi budget");
       selectedVariantKeys.clear();
-      rows.forEach(row => selectedVariantKeys.add(row.key));
+      rows.forEach(row => {
+        if (Array.isArray(row.keys) && row.keys.length) {
+          row.keys.forEach(key => selectedVariantKeys.add(key));
+        } else if (row.key) {
+          selectedVariantKeys.add(row.key);
+        }
+      });
       renderList();
       showPage("pending");
-      showToast(`${rows.length} data budget sudah dipilih`);
+      showToast(`${rows.length} barang budget sudah dipilih`);
     }
 
     function renderBudgetPage(forceCalculate = true) {
@@ -3536,7 +3551,7 @@
       actionRow.className = "budget-action-row";
       const info = document.createElement("div");
       info.className = "budget-note";
-      info.textContent = `Rekomendasi: ${result.rows.length} warna, total ${totalPcs} pcs. ${result.skippedNoPrice ? result.skippedNoPrice + " data tanpa harga kodian dilewati." : ""}`;
+      info.textContent = `Rekomendasi: ${result.rows.length} barang, total ${totalPcs} pcs. Patokan budget memakai nominal pojok kanan card barang. ${result.skippedNoPrice ? result.skippedNoPrice + " barang tanpa harga kodian dilewati." : ""}`;
       const selectBtn = document.createElement("button");
       selectBtn.className = "btn btn-green";
       selectBtn.type = "button";
@@ -3555,7 +3570,7 @@
           const title = document.createElement("strong");
           title.textContent = row.name;
           const desc = document.createElement("span");
-          desc.textContent = `${row.supplier} • ${row.color} • ${row.qty} pcs • ${formatRupiah(row.pcsPrice)}/pcs`;
+          desc.textContent = `${row.supplier} • ${row.color} • ${row.qty} pcs • nominal card barang`;
           main.append(title, desc);
 
           const price = document.createElement("div");
