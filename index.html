@@ -132,6 +132,7 @@
 
     .page { display: none; }
     .page.active { display: block; }
+    .page-detail { touch-action: pan-y; }
 
     .summary {
       display: grid;
@@ -1415,20 +1416,34 @@
     let items = [];
     let selectedSupplier = "";
     let activeColorInput = null;
+    let currentPageName = "home";
 
     todayText.textContent = new Date().toLocaleDateString("id-ID", {
       weekday: "long", day: "2-digit", month: "long", year: "numeric"
     });
 
-    function showPage(pageName) {
+    function showPage(pageName, pushHistory = true) {
       pageHome.classList.toggle("active", pageName === "home");
       pageList.classList.toggle("active", pageName === "list");
       pageDetail.classList.toggle("active", pageName === "detail");
+      currentPageName = pageName;
 
       navButtons.forEach(button => {
         const activeName = pageName === "detail" ? "list" : pageName;
         button.classList.toggle("active", button.dataset.page === activeName);
       });
+
+      if (pushHistory && window.history && history.pushState) {
+        const state = { page: pageName, supplier: selectedSupplier || "" };
+        const hash = pageName === "detail"
+          ? `#detail-${encodeURIComponent(selectedSupplier || "supplier")}`
+          : `#${pageName}`;
+        if (location.hash !== hash) {
+          history.pushState(state, "", hash);
+        } else {
+          history.replaceState(state, "", hash);
+        }
+      }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -1437,21 +1452,37 @@
     goListBtn.addEventListener("click", () => showPage("list"));
     if (backToListBtn) backToListBtn.addEventListener("click", () => showPage("list"));
 
-    pageDetail.addEventListener("touchstart", event => {
+    if (window.history && history.replaceState) {
+      history.replaceState({ page: "home", supplier: "" }, "", "#home");
+    }
+
+    window.addEventListener("popstate", event => {
+      const state = event.state || { page: "home", supplier: "" };
+      if (state.page === "detail" && state.supplier) {
+        selectedSupplier = state.supplier;
+        renderSupplierDetail(selectedSupplier);
+      }
+      showPage(state.page || "home", false);
+    });
+
+    document.addEventListener("touchstart", event => {
+      if (!pageDetail.classList.contains("active")) return;
       const touch = event.changedTouches[0];
       touchStartX = touch.screenX;
       touchStartY = touch.screenY;
     }, { passive: true });
 
-    pageDetail.addEventListener("touchend", event => {
+    document.addEventListener("touchend", event => {
+      if (!pageDetail.classList.contains("active")) return;
       const touch = event.changedTouches[0];
       touchEndX = touch.screenX;
       touchEndY = touch.screenY;
 
-      const diffX = touchStartX - touchEndX;
-      const diffY = Math.abs(touchStartY - touchEndY);
+      const diffX = touchEndX - touchStartX;
+      const diffY = Math.abs(touchEndY - touchStartY);
+      const isHorizontalSwipe = Math.abs(diffX) > 70 && diffY < 70;
 
-      if (pageDetail.classList.contains("active") && diffX > 70 && diffY < 80) {
+      if (isHorizontalSwipe) {
         showPage("list");
       }
     }, { passive: true });
