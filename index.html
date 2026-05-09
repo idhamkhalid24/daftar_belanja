@@ -130,7 +130,7 @@
       transform: translateX(-50%);
       width: min(760px, 94%);
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
       background: rgba(255, 255, 255, 0.95);
       border: 1px solid var(--border);
@@ -1733,6 +1733,166 @@
       }
     }
 
+
+
+    /* FIX: Kalkulator budget belanja */
+    .budget-box {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .budget-actions {
+      display: grid;
+      grid-template-columns: 1fr 0.7fr;
+      gap: 7px;
+    }
+
+    .budget-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 700;
+      background: #fff7fb;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .budget-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .budget-mini-stat {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .budget-mini-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .budget-mini-stat strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-action-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .budget-result-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .budget-result-card strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-result-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-top: 3px;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-price {
+      color: #9d174d;
+      font-weight: 900;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media screen and (max-width: 480px) {
+      .bottom-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .nav-btn {
+        font-size: 10px;
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+
+      .budget-box {
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .budget-actions {
+        grid-template-columns: 1fr 0.65fr;
+        gap: 5px;
+      }
+
+      .budget-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .budget-mini-stat {
+        border-radius: 9px;
+        padding: 6px 5px;
+      }
+
+      .budget-mini-stat span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .budget-mini-stat strong {
+        font-size: 10.5px;
+      }
+
+      .budget-result-card {
+        border-radius: 10px;
+        padding: 7px;
+        gap: 6px;
+      }
+
+      .budget-result-card strong {
+        font-size: 12px;
+      }
+
+      .budget-result-card span {
+        font-size: 9px;
+      }
+
+      .budget-price {
+        font-size: 10.5px;
+      }
+    }
+
     @media print {
       body { background: #fff; }
       .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
@@ -1875,6 +2035,29 @@
       </section>
     </section>
 
+
+
+    <section class="page page-budget" id="pageBudget">
+      <section class="card">
+        <div class="card-header">
+          <h2>Kalkulator Budget</h2>
+          <p>Filter daftar belanja yang paling mendekati budget.</p>
+        </div>
+        <div class="budget-box">
+          <div>
+            <label for="budgetInput">Budget Belanja</label>
+            <input id="budgetInput" type="text" inputmode="numeric" placeholder="Contoh: 3000000" autocomplete="off" />
+          </div>
+          <div class="budget-actions">
+            <button class="btn btn-primary" type="button" id="calculateBudgetBtn">Hitung Budget</button>
+            <button class="btn btn-light" type="button" id="clearBudgetBtn">Reset</button>
+          </div>
+          <div class="budget-note">Hitungan memakai barang yang belum dibeli dan sudah punya harga kodian.</div>
+        </div>
+        <div class="list budget-list" id="budgetResultList"></div>
+      </section>
+    </section>
+
     <section class="page page-detail" id="pageDetail">
       <section class="card">
         <div class="detail-top">
@@ -1896,6 +2079,7 @@
     <button class="nav-btn active" type="button" data-page="home">Home</button>
     <button class="nav-btn" type="button" data-page="list">Supplier</button>
     <button class="nav-btn" type="button" data-page="pending">Belum</button>
+    <button class="nav-btn" type="button" data-page="budget">Budget</button>
   </nav>
 
   <div class="toast" id="toast">Tersimpan</div>
@@ -1952,6 +2136,7 @@
     const pageHome = document.getElementById("pageHome");
     const pageList = document.getElementById("pageList");
     const pagePending = document.getElementById("pagePending");
+    const pageBudget = document.getElementById("pageBudget");
     const pageDetail = document.getElementById("pageDetail");
     const navButtons = document.querySelectorAll(".nav-btn");
     const goListBtn = document.getElementById("goListBtn");
@@ -1992,6 +2177,10 @@
     const detailSummary = document.getElementById("detailSummary");
     const searchInput = document.getElementById("searchInput");
     const statusFilter = document.getElementById("statusFilter");
+    const budgetInput = document.getElementById("budgetInput");
+    const calculateBudgetBtn = document.getElementById("calculateBudgetBtn");
+    const clearBudgetBtn = document.getElementById("clearBudgetBtn");
+    const budgetResultList = document.getElementById("budgetResultList");
     const totalCount = document.getElementById("totalCount");
     const pendingCount = document.getElementById("pendingCount");
     const totalPcsCount = document.getElementById("totalPcsCount");
@@ -2029,6 +2218,7 @@
       pageHome.classList.toggle("active", pageName === "home");
       pageList.classList.toggle("active", pageName === "list");
       pagePending.classList.toggle("active", pageName === "pending");
+      if (pageBudget) pageBudget.classList.toggle("active", pageName === "budget");
       pageDetail.classList.toggle("active", pageName === "detail");
       document.body.classList.toggle("detail-supplier-clean", pageName === "detail");
       const topSummary = document.querySelector(".summary");
@@ -2051,6 +2241,8 @@
           history.replaceState(state, "", hash);
         }
       }
+
+      if (pageName === "budget") renderBudgetPage(false);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -3159,6 +3351,183 @@
     }
 
 
+
+
+    function getBudgetRows() {
+      const rows = [];
+      sortItems(items).forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => {
+          if (variant.done) return;
+          const pcsPrice = getPcsPrice(item);
+          const amount = Math.round((Number(variant.qty) || 0) * pcsPrice);
+          rows.push({
+            key: getVariantSelectionKey(item, variantIndex),
+            itemId: item.id,
+            variantIndex,
+            supplier: getSupplierKey(item),
+            name: item.name || "Tanpa nama",
+            color: variant.colorName || "Tanpa warna",
+            qty: Math.max(1, Number(variant.qty) || 1),
+            pcsPrice,
+            amount,
+            priority: item.priority || "Sedang"
+          });
+        });
+      });
+      return rows;
+    }
+
+    function findBestBudgetCombination(rows, budget) {
+      const pricedRows = rows.filter(row => row.amount > 0 && row.amount <= budget);
+      const skippedNoPrice = rows.filter(row => row.amount <= 0).length;
+      if (!pricedRows.length || budget <= 0) {
+        return { rows: [], total: 0, remaining: budget, skippedNoPrice, step: 1 };
+      }
+
+      const step = Math.max(100, Math.ceil((budget / 12000) / 100) * 100);
+      const capacity = Math.max(1, Math.floor(budget / step));
+      const dp = Array(capacity + 1).fill(null);
+      dp[0] = { indexes: [], actualTotal: 0, totalQty: 0 };
+
+      pricedRows.forEach((row, index) => {
+        const costUnit = Math.max(1, Math.ceil(row.amount / step));
+        if (costUnit > capacity) return;
+
+        for (let current = capacity - costUnit; current >= 0; current--) {
+          const state = dp[current];
+          if (!state) continue;
+
+          const nextUnit = current + costUnit;
+          const nextActualTotal = state.actualTotal + row.amount;
+          if (nextActualTotal > budget) continue;
+
+          const nextQty = state.totalQty + row.qty;
+          const existing = dp[nextUnit];
+          const shouldReplace = !existing
+            || nextActualTotal > existing.actualTotal
+            || (nextActualTotal === existing.actualTotal && nextQty > existing.totalQty);
+
+          if (shouldReplace) {
+            dp[nextUnit] = {
+              indexes: state.indexes.concat(index),
+              actualTotal: nextActualTotal,
+              totalQty: nextQty
+            };
+          }
+        }
+      });
+
+      let best = dp[0];
+      dp.forEach(state => {
+        if (!state) return;
+        if (state.actualTotal > best.actualTotal) best = state;
+      });
+
+      const selectedRows = best.indexes.map(index => pricedRows[index]);
+      return {
+        rows: selectedRows,
+        total: best.actualTotal,
+        remaining: Math.max(0, budget - best.actualTotal),
+        skippedNoPrice,
+        step
+      };
+    }
+
+    function createBudgetMiniStat(label, value) {
+      const box = document.createElement("div");
+      box.className = "budget-mini-stat";
+      const span = document.createElement("span");
+      span.textContent = label;
+      const strong = document.createElement("strong");
+      strong.textContent = value;
+      box.append(span, strong);
+      return box;
+    }
+
+    function selectBudgetRecommendation(rows) {
+      if (!rows.length) return showToast("Belum ada rekomendasi budget");
+      selectedVariantKeys.clear();
+      rows.forEach(row => selectedVariantKeys.add(row.key));
+      renderList();
+      showPage("pending");
+      showToast(`${rows.length} data budget sudah dipilih`);
+    }
+
+    function renderBudgetPage(forceCalculate = true) {
+      if (!budgetResultList || !budgetInput) return;
+      const budget = parseRupiah(budgetInput.value);
+      budgetResultList.innerHTML = "";
+
+      if (!budget) {
+        budgetResultList.innerHTML = `<div class="empty">Masukkan budget dulu bro, contoh 3000000 untuk cari kombinasi belanja yang paling mendekati Rp3 juta.</div>`;
+        return;
+      }
+
+      if (!forceCalculate && !budgetResultList.dataset.calculated) {
+        budgetResultList.innerHTML = `<div class="empty">Klik Hitung Budget untuk mulai menyaring daftar belanja.</div>`;
+        return;
+      }
+
+      budgetResultList.dataset.calculated = "1";
+      const rows = getBudgetRows();
+      if (!rows.length) {
+        budgetResultList.innerHTML = `<div class="empty">Belum ada barang pending untuk dihitung bro.</div>`;
+        return;
+      }
+
+      const result = findBestBudgetCombination(rows, budget);
+      if (!result.rows.length) {
+        budgetResultList.innerHTML = `<div class="empty">Belum ada barang yang bisa masuk budget ini. Cek harga kodian atau naikkan budget.</div>`;
+        return;
+      }
+
+      const totalPcs = result.rows.reduce((sum, row) => sum + row.qty, 0);
+      const summary = document.createElement("div");
+      summary.className = "budget-summary";
+      summary.append(
+        createBudgetMiniStat("Budget", formatRupiah(budget)),
+        createBudgetMiniStat("Terpakai", formatRupiah(result.total)),
+        createBudgetMiniStat("Sisa", formatRupiah(result.remaining))
+      );
+      budgetResultList.appendChild(summary);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "budget-action-row";
+      const info = document.createElement("div");
+      info.className = "budget-note";
+      info.textContent = `Rekomendasi: ${result.rows.length} warna, total ${totalPcs} pcs. ${result.skippedNoPrice ? result.skippedNoPrice + " data tanpa harga kodian dilewati." : ""}`;
+      const selectBtn = document.createElement("button");
+      selectBtn.className = "btn btn-green";
+      selectBtn.type = "button";
+      selectBtn.textContent = "Pilih Rekomendasi di Halaman Belum";
+      selectBtn.addEventListener("click", () => selectBudgetRecommendation(result.rows));
+      actionRow.append(info, selectBtn);
+      budgetResultList.appendChild(actionRow);
+
+      result.rows
+        .sort((a, b) => a.supplier.localeCompare(b.supplier, "id-ID") || a.name.localeCompare(b.name, "id-ID"))
+        .forEach(row => {
+          const card = document.createElement("div");
+          card.className = "budget-result-card";
+
+          const main = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = row.name;
+          const desc = document.createElement("span");
+          desc.textContent = `${row.supplier} • ${row.color} • ${row.qty} pcs • ${formatRupiah(row.pcsPrice)}/pcs`;
+          main.append(title, desc);
+
+          const price = document.createElement("div");
+          price.className = "budget-price";
+          price.textContent = formatRupiah(row.amount);
+
+          card.append(main, price);
+          budgetResultList.appendChild(card);
+        });
+    }
+
+
     function renderMiniStats(target, stats) {
       target.innerHTML = "";
       stats.forEach(([label, value]) => {
@@ -3509,6 +3878,7 @@
       if (selectedSupplier && pageDetail.classList.contains("active")) {
         renderSupplierDetail(selectedSupplier);
       }
+      if (pageBudget && pageBudget.classList.contains("active")) renderBudgetPage(true);
     }
 
     async function refreshItems() {
@@ -3587,6 +3957,24 @@
     if (clearDataKeepMasterBtn) clearDataKeepMasterBtn.addEventListener("click", clearAllDataKeepMaster);
     searchInput.addEventListener("input", renderList);
     statusFilter.addEventListener("change", renderList);
+    if (budgetInput) {
+      budgetInput.addEventListener("input", () => {
+        budgetInput.value = budgetInput.value ? formatRupiah(parseRupiah(budgetInput.value)) : "";
+        if (budgetResultList) delete budgetResultList.dataset.calculated;
+      });
+      budgetInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          renderBudgetPage(true);
+        }
+      });
+    }
+    if (calculateBudgetBtn) calculateBudgetBtn.addEventListener("click", () => renderBudgetPage(true));
+    if (clearBudgetBtn) clearBudgetBtn.addEventListener("click", () => {
+      if (budgetInput) budgetInput.value = "";
+      if (budgetResultList) delete budgetResultList.dataset.calculated;
+      renderBudgetPage(false);
+    });
 
 
     if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
