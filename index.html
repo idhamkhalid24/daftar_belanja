@@ -1336,6 +1336,147 @@
 
 
 
+
+    /* FIX PIN MODAL: tampilan custom + keyboard angka otomatis */
+    .pin-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(36, 21, 40, 0.48);
+      z-index: 1400;
+      backdrop-filter: blur(8px);
+    }
+
+    .pin-modal.show {
+      display: flex;
+    }
+
+    .pin-dialog {
+      width: min(390px, 94vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(36, 21, 40, 0.26);
+      padding: 18px;
+      text-align: center;
+      animation: pinPop 0.18s ease-out;
+    }
+
+    @keyframes pinPop {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .pin-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 10px;
+      background: linear-gradient(135deg, #fce7f3, #ffedd5);
+      color: #9d174d;
+      font-size: 25px;
+      box-shadow: 0 10px 25px rgba(219, 39, 119, 0.14);
+    }
+
+    .pin-dialog h3 {
+      margin: 0 0 5px;
+      color: var(--text);
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .pin-dialog p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .pin-input {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 18px;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.28em;
+      color: #831843;
+      background: #fff7fb;
+      border: 2px solid var(--border);
+      outline: none;
+      -webkit-text-security: disc;
+    }
+
+    .pin-input:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 5px rgba(219, 39, 119, 0.13);
+    }
+
+    .pin-error {
+      min-height: 18px;
+      margin: 8px 0 2px;
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pin-actions {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    body.pin-lock {
+      overflow: hidden;
+    }
+
+    @media screen and (max-width: 480px) {
+      .pin-modal {
+        padding: 12px;
+        align-items: center;
+      }
+
+      .pin-dialog {
+        width: 100%;
+        border-radius: 20px;
+        padding: 15px;
+      }
+
+      .pin-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        font-size: 23px;
+      }
+
+      .pin-dialog h3 {
+        font-size: 18px;
+      }
+
+      .pin-dialog p {
+        font-size: 11px;
+      }
+
+      .pin-input {
+        min-height: 54px;
+        border-radius: 16px;
+        font-size: 26px;
+      }
+
+      .pin-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     .print-actions {
       display: grid;
       grid-template-columns: 1fr;
@@ -1447,6 +1588,129 @@
       }
     }
 
+
+    /* FIX: select data massal untuk ceklis / hapus */
+    .bulk-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 7px;
+      margin-bottom: 7px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(131, 24, 67, 0.06);
+    }
+
+    .bulk-count {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #56304d;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .bulk-count small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .bulk-actions .icon-btn {
+      min-width: 0;
+      min-height: 34px;
+      padding: 7px 6px;
+      border-radius: 10px;
+      font-size: 10.5px;
+    }
+
+    .bulk-actions .icon-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .simple-variant-row {
+      grid-template-columns: 34px 34px minmax(0, 1fr) 0.8fr;
+    }
+
+    .simple-variant-row.variant-selected {
+      background: #fff7fb;
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .select-check-wrap {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .select-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .select-check.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    @media screen and (max-width: 480px) {
+      .bulk-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        padding: 6px;
+        border-radius: 10px;
+      }
+
+      .bulk-actions .icon-btn {
+        min-height: 32px;
+        font-size: 10px;
+        padding: 6px 5px;
+      }
+
+      .bulk-count {
+        font-size: 10px;
+      }
+
+      .bulk-count small {
+        font-size: 9px;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px 28px minmax(0, 1fr) 72px !important;
+      }
+
+      .select-check {
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        border-width: 1.5px;
+        font-size: 10px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .simple-variant-row {
+        grid-template-columns: 27px 27px minmax(0, 1fr) 62px !important;
+      }
+    }
+
     @media print {
       body { background: #fff; }
       .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
@@ -1552,6 +1816,7 @@
 
         <div class="home-actions">
           <button class="btn btn-green" type="button" id="goListBtn">Lihat List Belanja</button>
+          <button class="btn btn-danger" type="button" id="clearDataKeepMasterBtn">Hapus Data</button>
         </div>
       </section>
     </section>
@@ -1613,6 +1878,30 @@
 
   <div class="toast" id="toast">Tersimpan</div>
 
+
+  <div class="pin-modal" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+    <div class="pin-dialog">
+      <div class="pin-icon" aria-hidden="true">🔐</div>
+      <h3 id="pinModalTitle">Masukkan PIN</h3>
+      <p id="pinActionText">Konfirmasi aksi ini pakai PIN.</p>
+      <input
+        class="pin-input"
+        id="pinInput"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="12"
+        autocomplete="off"
+        aria-label="PIN aplikasi"
+      />
+      <div class="pin-error" id="pinError" aria-live="polite"></div>
+      <div class="pin-actions">
+        <button class="btn btn-light" type="button" id="pinCancelBtn">Batal</button>
+        <button class="btn btn-primary" type="button" id="pinConfirmBtn">Lanjut</button>
+      </div>
+    </div>
+  </div>
+
   <div class="print-modal" id="printModal" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
     <div class="print-dialog">
       <div class="print-head">
@@ -1632,6 +1921,7 @@
     const DB_NAME = "belanja_toko_hijab_android_db";
     const DB_VERSION = 1;
     const STORE_NAME = "items";
+    const MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
     const DEFAULT_UNIT = "pcs";
     const UNSET_SUPPLIER = "Supplier belum diisi";
     const APP_PIN = "123";
@@ -1643,6 +1933,7 @@
     const pageDetail = document.getElementById("pageDetail");
     const navButtons = document.querySelectorAll(".nav-btn");
     const goListBtn = document.getElementById("goListBtn");
+    const clearDataKeepMasterBtn = document.getElementById("clearDataKeepMasterBtn");
     const backToListBtn = document.getElementById("backToListBtn");
     let touchStartX = 0;
     let touchStartY = 0;
@@ -1692,12 +1983,19 @@
     const closePrintBtn = document.getElementById("closePrintBtn");
     const selectPrinterBtn = document.getElementById("selectPrinterBtn");
     const sendPrintBtn = document.getElementById("sendPrintBtn");
+    const pinModal = document.getElementById("pinModal");
+    const pinInput = document.getElementById("pinInput");
+    const pinActionText = document.getElementById("pinActionText");
+    const pinError = document.getElementById("pinError");
+    const pinCancelBtn = document.getElementById("pinCancelBtn");
+    const pinConfirmBtn = document.getElementById("pinConfirmBtn");
 
     let db = null;
     let items = [];
     let selectedSupplier = "";
     let activeColorInput = null;
     let currentPageName = "home";
+    let selectedVariantKeys = new Set();
     let bluetoothDevice = null;
     let printerCharacteristic = null;
 
@@ -1813,6 +2111,7 @@
 
     function saveItem(item) { return runStore("readwrite", store => store.put(item)); }
     function removeItemById(id) { return runStore("readwrite", store => store.delete(id)); }
+    function clearAllItems() { return runStore("readwrite", store => store.clear()); }
     function clearDoneVariants() {
       return runStore("readwrite", store => {
         items.forEach(rawItem => {
@@ -1844,6 +2143,52 @@
       return String(value || "").replace(/[<>]/g, "").trim();
     }
 
+    function cleanSavedList(values) {
+      return [...new Set((Array.isArray(values) ? values : []).map(safeText).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "id-ID"));
+    }
+
+    function getStoredSavedData() {
+      try {
+        const raw = localStorage.getItem(MASTER_DATA_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        return {
+          itemNames: cleanSavedList(data.itemNames),
+          suppliers: cleanSavedList(data.suppliers),
+          colors: cleanSavedList(data.colors)
+        };
+      } catch (error) {
+        console.warn("Gagal baca data master saran", error);
+        return { itemNames: [], suppliers: [], colors: [] };
+      }
+    }
+
+    function saveStoredSavedData(data) {
+      const oldData = getStoredSavedData();
+      const nextData = {
+        itemNames: cleanSavedList([...(oldData.itemNames || []), ...((data && data.itemNames) || [])]),
+        suppliers: cleanSavedList([...(oldData.suppliers || []), ...((data && data.suppliers) || [])]),
+        colors: cleanSavedList([...(oldData.colors || []), ...((data && data.colors) || [])])
+      };
+
+      try {
+        localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(nextData));
+      } catch (error) {
+        console.warn("Gagal simpan data master saran", error);
+      }
+
+      return nextData;
+    }
+
+    function rememberSavedFromItem(rawItem) {
+      const item = normalizeItem(rawItem);
+      saveStoredSavedData({
+        itemNames: item.name ? [item.name] : [],
+        suppliers: item.supplierName ? [item.supplierName] : [],
+        colors: item.variants.map(variant => variant.colorName).filter(Boolean)
+      });
+    }
+
     function formatRupiah(value) {
       const number = Number(value) || 0;
       return new Intl.NumberFormat("id-ID", {
@@ -1867,15 +2212,84 @@
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
 
-    function requirePin(actionText) {
-      const pin = prompt(`Masukkan PIN untuk ${actionText}:`);
-      if (pin === null) return false;
-      if (pin !== APP_PIN) {
-        alert("PIN salah bro.");
-        return false;
-      }
-      return true;
+    let pinResolve = null;
+
+    function closePinModal(result) {
+      if (pinModal) pinModal.classList.remove("show");
+      document.body.classList.remove("pin-lock");
+      if (pinInput) pinInput.value = "";
+      if (pinError) pinError.textContent = "";
+
+      const resolver = pinResolve;
+      pinResolve = null;
+      if (resolver) resolver(Boolean(result));
     }
+
+    function confirmPinModal() {
+      const pin = String(pinInput ? pinInput.value : "").replace(/\D/g, "");
+      if (pin !== APP_PIN) {
+        if (pinError) pinError.textContent = "PIN salah bro.";
+        if (pinInput) {
+          pinInput.value = "";
+          pinInput.focus({ preventScroll: true });
+        }
+        return;
+      }
+      closePinModal(true);
+    }
+
+    function focusPinInput() {
+      if (!pinInput) return;
+      pinInput.focus({ preventScroll: true });
+      if (typeof pinInput.click === "function") pinInput.click();
+    }
+
+    function requirePin(actionText) {
+      if (!pinModal || !pinInput || !pinConfirmBtn || !pinCancelBtn) {
+        const pin = prompt(`Masukkan PIN untuk ${actionText}:`);
+        if (pin === null) return Promise.resolve(false);
+        if (pin !== APP_PIN) {
+          alert("PIN salah bro.");
+          return Promise.resolve(false);
+        }
+        return Promise.resolve(true);
+      }
+
+      return new Promise(resolve => {
+        pinResolve = resolve;
+        if (pinActionText) pinActionText.textContent = `Konfirmasi untuk ${actionText}. Keyboard angka akan otomatis muncul.`;
+        if (pinError) pinError.textContent = "";
+        pinInput.value = "";
+        pinModal.classList.add("show");
+        document.body.classList.add("pin-lock");
+        focusPinInput();
+        setTimeout(focusPinInput, 80);
+      });
+    }
+
+    if (pinInput) {
+      pinInput.addEventListener("input", () => {
+        pinInput.value = pinInput.value.replace(/\D/g, "");
+        if (pinError) pinError.textContent = "";
+      });
+
+      pinInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          confirmPinModal();
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closePinModal(false);
+        }
+      });
+    }
+
+    if (pinConfirmBtn) pinConfirmBtn.addEventListener("click", confirmPinModal);
+    if (pinCancelBtn) pinCancelBtn.addEventListener("click", () => closePinModal(false));
+    if (pinModal) pinModal.addEventListener("click", event => {
+      if (event.target === pinModal) closePinModal(false);
+    });
 
     function updatePrinterStatus(message) {
       if (printerStatus) printerStatus.textContent = message;
@@ -2016,9 +2430,10 @@
     }
 
     function getSavedData() {
-      const itemNames = new Set();
-      const suppliers = new Set();
-      const colors = new Set();
+      const stored = getStoredSavedData();
+      const itemNames = new Set(stored.itemNames);
+      const suppliers = new Set(stored.suppliers);
+      const colors = new Set(stored.colors);
 
       items.forEach(rawItem => {
         const item = normalizeItem(rawItem);
@@ -2234,8 +2649,196 @@
       return span;
     }
 
+
+    function getVariantSelectionKey(item, variantIndex) {
+      const data = normalizeItem(item);
+      return `${data.id}::${variantIndex}`;
+    }
+
+    function getVisibleVariantKeys(itemList, pendingOnly = false) {
+      const keys = [];
+      itemList.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => {
+          if (pendingOnly && variant.done) return;
+          keys.push(getVariantSelectionKey(item, variantIndex));
+        });
+      });
+      return keys;
+    }
+
+    function getSelectedVisibleKeys(itemList, pendingOnly = false) {
+      return getVisibleVariantKeys(itemList, pendingOnly).filter(key => selectedVariantKeys.has(key));
+    }
+
+    function pruneSelectedVariantKeys() {
+      const validKeys = new Set();
+      items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => validKeys.add(getVariantSelectionKey(item, variantIndex)));
+      });
+      selectedVariantKeys.forEach(key => {
+        if (!validKeys.has(key)) selectedVariantKeys.delete(key);
+      });
+    }
+
+    function toggleVariantSelection(item, variantIndex) {
+      const key = getVariantSelectionKey(item, variantIndex);
+      if (selectedVariantKeys.has(key)) {
+        selectedVariantKeys.delete(key);
+      } else {
+        selectedVariantKeys.add(key);
+      }
+      renderList();
+    }
+
+    function createBulkActions(itemList, options = {}) {
+      const pendingOnly = Boolean(options.pendingOnly);
+      const visibleKeys = getVisibleVariantKeys(itemList, pendingOnly);
+      const selectedKeys = visibleKeys.filter(key => selectedVariantKeys.has(key));
+      const selectedCount = selectedKeys.length;
+      const allSelected = visibleKeys.length > 0 && selectedCount === visibleKeys.length;
+
+      const bar = document.createElement("div");
+      bar.className = "bulk-actions";
+
+      const count = document.createElement("div");
+      count.className = "bulk-count";
+      const title = document.createElement("span");
+      title.textContent = `Dipilih: ${selectedCount} data`;
+      const hint = document.createElement("small");
+      hint.textContent = "Pilih warna dulu, lalu aksi massal.";
+      count.append(title, hint);
+
+      const selectAllBtn = document.createElement("button");
+      selectAllBtn.className = "icon-btn";
+      selectAllBtn.type = "button";
+      selectAllBtn.textContent = allSelected ? "Batal Semua" : "Pilih Semua";
+      selectAllBtn.disabled = !visibleKeys.length;
+      selectAllBtn.addEventListener("click", () => {
+        if (allSelected) {
+          visibleKeys.forEach(key => selectedVariantKeys.delete(key));
+        } else {
+          visibleKeys.forEach(key => selectedVariantKeys.add(key));
+        }
+        renderList();
+      });
+
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "icon-btn";
+      clearBtn.type = "button";
+      clearBtn.textContent = "Reset Pilih";
+      clearBtn.disabled = !selectedCount;
+      clearBtn.addEventListener("click", () => {
+        visibleKeys.forEach(key => selectedVariantKeys.delete(key));
+        renderList();
+      });
+
+      const doneBtn = document.createElement("button");
+      doneBtn.className = "icon-btn";
+      doneBtn.type = "button";
+      doneBtn.textContent = "Ceklis Dipilih";
+      doneBtn.disabled = !selectedCount;
+      doneBtn.addEventListener("click", () => markSelectedVariantsDone(itemList, pendingOnly));
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "icon-btn danger";
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "Hapus Dipilih";
+      deleteBtn.disabled = !selectedCount;
+      deleteBtn.addEventListener("click", () => deleteSelectedVariants(itemList, pendingOnly));
+
+      bar.append(count, selectAllBtn, clearBtn, doneBtn, deleteBtn);
+      return bar;
+    }
+
+    async function markSelectedVariantsDone(itemList, pendingOnly = false) {
+      const selectedKeys = new Set(getSelectedVisibleKeys(itemList, pendingOnly));
+      if (!selectedKeys.size) return showToast("Pilih data dulu bro");
+      if (!(await requirePin("ceklis massal"))) return;
+
+      try {
+        let changedCount = 0;
+        const saves = [];
+        itemList.forEach(rawItem => {
+          const data = normalizeItem(rawItem);
+          let changed = false;
+          data.variants = data.variants.map((variant, variantIndex) => {
+            const key = getVariantSelectionKey(data, variantIndex);
+            if (!selectedKeys.has(key)) return variant;
+            if (variant.done) return variant;
+            changed = true;
+            changedCount += 1;
+            return { ...variant, done: true };
+          });
+          if (!changed) return;
+          data.done = data.variants.every(variant => variant.done);
+          data.updatedAt = new Date().toISOString();
+          saves.push(saveItem(data));
+        });
+
+        await Promise.all(saves);
+        selectedKeys.forEach(key => selectedVariantKeys.delete(key));
+        await refreshItems();
+        showToast(changedCount ? `${changedCount} data diceklis` : "Data dipilih sudah terceklis");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal ceklis massal bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function deleteSelectedVariants(itemList, pendingOnly = false) {
+      const selectedKeys = new Set(getSelectedVisibleKeys(itemList, pendingOnly));
+      if (!selectedKeys.size) return showToast("Pilih data dulu bro");
+      if (!(await requirePin("hapus massal"))) return;
+
+      const ok = confirm(`Hapus ${selectedKeys.size} data yang dipilih? Nama barang, supplier, dan warna tetap disimpan untuk saran input.`);
+      if (!ok) return;
+
+      try {
+        saveStoredSavedData(getSavedData());
+        const jobs = [];
+        let deletedCount = 0;
+
+        itemList.forEach(rawItem => {
+          const data = normalizeItem(rawItem);
+          const remainingVariants = [];
+
+          data.variants.forEach((variant, variantIndex) => {
+            const key = getVariantSelectionKey(data, variantIndex);
+            if (selectedKeys.has(key)) {
+              deletedCount += 1;
+              return;
+            }
+            remainingVariants.push(variant);
+          });
+
+          if (remainingVariants.length === data.variants.length) return;
+
+          if (!remainingVariants.length) {
+            jobs.push(removeItemById(data.id));
+          } else {
+            jobs.push(saveItem({
+              ...data,
+              variants: remainingVariants,
+              done: remainingVariants.every(variant => variant.done),
+              updatedAt: new Date().toISOString()
+            }));
+          }
+        });
+
+        await Promise.all(jobs);
+        selectedKeys.forEach(key => selectedVariantKeys.delete(key));
+        await refreshItems();
+        showToast(`${deletedCount} data dihapus`);
+      } catch (error) {
+        console.error(error);
+        alert("Gagal hapus massal bro. Coba refresh lalu ulangi.");
+      }
+    }
+
     async function deleteItem(item) {
-      if (!requirePin("hapus barang")) return;
+      if (!(await requirePin("hapus barang"))) return;
       const ok = confirm(`Hapus "${item.name}" dari list belanja?`);
       if (!ok) return;
       try {
@@ -2250,7 +2853,7 @@
     }
 
     async function toggleVariantDone(item, variantIndex) {
-      if (!requirePin("ceklis barang")) return;
+      if (!(await requirePin("ceklis barang"))) return;
       const data = normalizeItem(item);
       data.variants = data.variants.map((variant, index) => {
         if (index !== variantIndex) return variant;
@@ -2271,7 +2874,7 @@
     }
 
     async function toggleDone(item) {
-      if (!requirePin("ceklis barang")) return;
+      if (!(await requirePin("ceklis barang"))) return;
       const data = normalizeItem(item);
       const nextDone = !data.done;
       data.variants = data.variants.map(variant => ({ ...variant, done: nextDone }));
@@ -2461,6 +3064,8 @@
         return;
       }
 
+      detailItemList.appendChild(createBulkActions(supplierItems, { pendingOnly: false }));
+
       const simpleList = document.createElement("div");
       simpleList.className = "simple-detail";
 
@@ -2480,7 +3085,19 @@
 
         item.variants.forEach((variant, variantIndex) => {
           const variantRow = document.createElement("div");
-          variantRow.className = "simple-variant-row" + (variant.done ? " variant-done" : "");
+          const selectionKey = getVariantSelectionKey(item, variantIndex);
+          const isSelected = selectedVariantKeys.has(selectionKey);
+          variantRow.className = "simple-variant-row" + (variant.done ? " variant-done" : "") + (isSelected ? " variant-selected" : "");
+
+          const selectWrap = document.createElement("div");
+          selectWrap.className = "select-check-wrap";
+          const selectBtn = document.createElement("button");
+          selectBtn.className = "select-check" + (isSelected ? " selected" : "");
+          selectBtn.type = "button";
+          selectBtn.textContent = isSelected ? "✓" : "";
+          selectBtn.title = isSelected ? "Batalkan pilihan" : "Pilih data";
+          selectBtn.addEventListener("click", () => toggleVariantSelection(item, variantIndex));
+          selectWrap.appendChild(selectBtn);
 
           const checkWrap = document.createElement("div");
           checkWrap.className = "variant-check-wrap";
@@ -2508,7 +3125,7 @@
           jumlahValue.textContent = `${variant.qty} pcs`;
           jumlah.append(jumlahLabel, jumlahValue);
 
-          variantRow.append(checkWrap, warna, jumlah);
+          variantRow.append(selectWrap, checkWrap, warna, jumlah);
           row.appendChild(variantRow);
         });
 
@@ -2569,6 +3186,8 @@
         return;
       }
 
+      pendingItemList.appendChild(createBulkActions(pendingItems, { pendingOnly: true }));
+
       const simpleList = document.createElement("div");
       simpleList.className = "simple-detail";
 
@@ -2590,7 +3209,19 @@
           if (variant.done) return;
 
           const variantRow = document.createElement("div");
-          variantRow.className = "simple-variant-row";
+          const selectionKey = getVariantSelectionKey(item, variantIndex);
+          const isSelected = selectedVariantKeys.has(selectionKey);
+          variantRow.className = "simple-variant-row" + (isSelected ? " variant-selected" : "");
+
+          const selectWrap = document.createElement("div");
+          selectWrap.className = "select-check-wrap";
+          const selectBtn = document.createElement("button");
+          selectBtn.className = "select-check" + (isSelected ? " selected" : "");
+          selectBtn.type = "button";
+          selectBtn.textContent = isSelected ? "✓" : "";
+          selectBtn.title = isSelected ? "Batalkan pilihan" : "Pilih data";
+          selectBtn.addEventListener("click", () => toggleVariantSelection(item, variantIndex));
+          selectWrap.appendChild(selectBtn);
 
           const checkWrap = document.createElement("div");
           checkWrap.className = "variant-check-wrap";
@@ -2618,7 +3249,7 @@
           jumlahValue.textContent = `${variant.qty} pcs`;
           jumlah.append(jumlahLabel, jumlahValue);
 
-          variantRow.append(checkWrap, warna, jumlah);
+          variantRow.append(selectWrap, checkWrap, warna, jumlah);
           row.appendChild(variantRow);
         });
 
@@ -2877,7 +3508,32 @@
 
     async function refreshItems() {
       items = (await getAllItems()).map(normalizeItem);
+      pruneSelectedVariantKeys();
       renderList();
+    }
+
+    async function clearAllDataKeepMaster() {
+      if (!(await requirePin("hapus semua data"))) return;
+
+      const savedData = getSavedData();
+      const ok = confirm("Hapus semua data belanja? Nama barang, supplier, dan warna tetap disimpan untuk saran input.");
+      if (!ok) return;
+
+      try {
+        saveStoredSavedData(savedData);
+        await clearAllItems();
+        items = [];
+        selectedSupplier = "";
+        selectedVariantKeys.clear();
+        resetForm();
+        await refreshItems();
+        updateSuggestions();
+        showPage("home");
+        showToast("Data dihapus, nama/supplier/warna tetap aman");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal hapus data bro. Coba refresh lalu ulangi.");
+      }
     }
 
     function getFormItem() {
@@ -2911,6 +3567,7 @@
       if (item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Jumlah warna minimal 1 bro.");
       try {
         const edited = Boolean(editId.value);
+        rememberSavedFromItem(item);
         await saveItem(item);
         await refreshItems();
         resetForm();
@@ -2922,6 +3579,7 @@
     });
 
     resetBtn.addEventListener("click", resetForm);
+    if (clearDataKeepMasterBtn) clearDataKeepMasterBtn.addEventListener("click", clearAllDataKeepMaster);
     searchInput.addEventListener("input", renderList);
     statusFilter.addEventListener("change", renderList);
 
