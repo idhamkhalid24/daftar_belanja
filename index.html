@@ -84,6 +84,34 @@
       white-space: nowrap;
     }
 
+
+
+    .hero-actions {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .printer-logo-btn {
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .printer-logo-btn:active {
+      transform: scale(0.96);
+      background: rgba(255,255,255,0.26);
+    }
+
     .today {
       display: inline-flex;
       padding: 7px 10px;
@@ -102,8 +130,8 @@
       transform: translateX(-50%);
       width: min(760px, 94%);
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
       background: rgba(255, 255, 255, 0.95);
       border: 1px solid var(--border);
       border-radius: 24px;
@@ -116,7 +144,7 @@
     .nav-btn {
       border: 0;
       border-radius: 17px;
-      padding: 13px 10px;
+      padding: 12px 8px;
       background: transparent;
       color: #9d174d;
       font-weight: 900;
@@ -825,6 +853,18 @@
         min-height: 30px;
       }
 
+
+
+      .hero-actions {
+        gap: 6px;
+      }
+
+      .printer-logo-btn {
+        width: 31px;
+        height: 31px;
+        font-size: 15px;
+      }
+
       .today {
         margin-top: 7px;
         padding: 5px 8px;
@@ -1150,14 +1190,14 @@
         bottom: 7px;
         border-radius: 17px;
         padding: 6px;
-        gap: 6px;
+        gap: 5px;
       }
 
       .nav-btn {
         min-height: 40px;
         border-radius: 12px;
-        padding: 8px;
-        font-size: 12px;
+        padding: 7px 4px;
+        font-size: 11px;
       }
 
       .toast {
@@ -1225,9 +1265,122 @@
       }
     }
 
+
+
+    .print-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      padding: 0 10px 10px;
+      background: #fff;
+    }
+
+    .print-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(36, 21, 40, 0.42);
+      z-index: 1200;
+    }
+
+    .print-modal.show {
+      display: flex;
+    }
+
+    .print-dialog {
+      width: min(520px, 96vw);
+      max-height: 86vh;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 22px 70px rgba(36, 21, 40, 0.24);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .print-head {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      background: #fff7fb;
+    }
+
+    .print-head h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .print-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .print-preview {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      background: #fff;
+      color: #111827;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .print-footer {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr 1fr;
+      gap: 7px;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      background: #fff7fb;
+    }
+
+    @media screen and (max-width: 480px) {
+      .print-actions {
+        padding: 0 7px 7px;
+      }
+
+      .print-dialog {
+        width: 100%;
+        max-height: 88vh;
+        border-radius: 14px;
+      }
+
+      .print-head {
+        padding: 10px;
+      }
+
+      .print-head h3 {
+        font-size: 14px;
+      }
+
+      .print-head p {
+        font-size: 10px;
+      }
+
+      .print-preview {
+        padding: 10px;
+        font-size: 11px;
+      }
+
+      .print-footer {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px;
+      }
+    }
+
     @media print {
       body { background: #fff; }
-      .hero, .bottom-nav, .page-home, .page-list, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
+      .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
       .page-detail { display: block !important; }
       .app { width: 100%; padding: 0; }
       .card, .stat, .item { box-shadow: none; }
@@ -1243,7 +1396,10 @@
           <h1>List Belanja Toko Hijab</h1>
           
         </div>
-        <button class="reset-top" type="button" id="resetBtn">Reset</button>
+        <div class="hero-actions">
+          <button class="printer-logo-btn" type="button" id="printerBtn" aria-label="Cetak List Belanja" title="Cetak List Belanja">🖨️</button>
+          <button class="reset-top" type="button" id="resetBtn">Reset</button>
+        </div>
       </div>
       <div class="today" id="todayText">Hari ini</div>
     </section>
@@ -1345,13 +1501,20 @@
             <option value="done">Sudah dibeli</option>
           </select>
         </div>
+<div class="list" id="supplierList"></div>
+      </section>
+    </section>
 
-        <div class="quick-actions">
-          <button class="btn btn-green" type="button" id="printBtn">Print Detail</button>
-          <button class="btn btn-danger" type="button" id="clearDoneBtn">Hapus Selesai</button>
+
+    <section class="page page-pending" id="pagePending">
+      <section class="card">
+        <div class="detail-top">
+          <div class="detail-title">
+            <h2>Barang Belum Selesai</h2>
+          </div>
+          <div class="detail-summary" id="pendingSummary"></div>
         </div>
-
-        <div class="list" id="supplierList"></div>
+        <div class="list" id="pendingItemList"></div>
       </section>
     </section>
 
@@ -1374,10 +1537,26 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" type="button" data-page="home">Home</button>
-    <button class="nav-btn" type="button" data-page="list">List Belanja</button>
+    <button class="nav-btn" type="button" data-page="list">Supplier</button>
+    <button class="nav-btn" type="button" data-page="pending">Belum</button>
   </nav>
 
   <div class="toast" id="toast">Tersimpan</div>
+
+  <div class="print-modal" id="printModal" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
+    <div class="print-dialog">
+      <div class="print-head">
+        <h3 id="printModalTitle">Preview List Belanja</h3>
+        <p id="printerStatus">Printer Android: RPP02N-FF57</p>
+      </div>
+      <pre class="print-preview" id="printPreviewText"></pre>
+      <div class="print-footer">
+        <button class="btn btn-light" type="button" id="closePrintBtn">Tutup</button>
+        <button class="btn btn-green" type="button" id="selectPrinterBtn">Cek Printer</button>
+        <button class="btn btn-primary" type="button" id="sendPrintBtn">Cetak</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const DB_NAME = "belanja_toko_hijab_android_db";
@@ -1385,9 +1564,12 @@
     const STORE_NAME = "items";
     const DEFAULT_UNIT = "pcs";
     const UNSET_SUPPLIER = "Supplier belum diisi";
+    const APP_PIN = "123";
+    const PRINTER_NAME = "RPP02N-FF57";
 
     const pageHome = document.getElementById("pageHome");
     const pageList = document.getElementById("pageList");
+    const pagePending = document.getElementById("pagePending");
     const pageDetail = document.getElementById("pageDetail");
     const navButtons = document.querySelectorAll(".nav-btn");
     const goListBtn = document.getElementById("goListBtn");
@@ -1419,26 +1601,35 @@
     const savedToggleButtons = document.querySelectorAll("[data-saved-target]");
 
     const supplierList = document.getElementById("supplierList");
+    const pendingItemList = document.getElementById("pendingItemList");
+    const pendingSummary = document.getElementById("pendingSummary");
     const detailItemList = document.getElementById("detailItemList");
     const detailSupplierName = document.getElementById("detailSupplierName");
     const detailSupplierNote = document.getElementById("detailSupplierNote");
     const detailSummary = document.getElementById("detailSummary");
     const searchInput = document.getElementById("searchInput");
     const statusFilter = document.getElementById("statusFilter");
-    const printBtn = document.getElementById("printBtn");
-    const clearDoneBtn = document.getElementById("clearDoneBtn");
     const totalCount = document.getElementById("totalCount");
     const pendingCount = document.getElementById("pendingCount");
     const totalPcsCount = document.getElementById("totalPcsCount");
     const totalModalCount = document.getElementById("totalModalCount");
     const todayText = document.getElementById("todayText");
     const toast = document.getElementById("toast");
+    const printerBtn = document.getElementById("printerBtn");
+    const printModal = document.getElementById("printModal");
+    const printPreviewText = document.getElementById("printPreviewText");
+    const printerStatus = document.getElementById("printerStatus");
+    const closePrintBtn = document.getElementById("closePrintBtn");
+    const selectPrinterBtn = document.getElementById("selectPrinterBtn");
+    const sendPrintBtn = document.getElementById("sendPrintBtn");
 
     let db = null;
     let items = [];
     let selectedSupplier = "";
     let activeColorInput = null;
     let currentPageName = "home";
+    let bluetoothDevice = null;
+    let printerCharacteristic = null;
 
     todayText.textContent = new Date().toLocaleDateString("id-ID", {
       weekday: "long", day: "2-digit", month: "long", year: "numeric"
@@ -1447,6 +1638,7 @@
     function showPage(pageName, pushHistory = true) {
       pageHome.classList.toggle("active", pageName === "home");
       pageList.classList.toggle("active", pageName === "list");
+      pagePending.classList.toggle("active", pageName === "pending");
       pageDetail.classList.toggle("active", pageName === "detail");
       currentPageName = pageName;
 
@@ -1604,6 +1796,21 @@
       toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
+
+    function requirePin(actionText) {
+      const pin = prompt(`Masukkan PIN untuk ${actionText}:`);
+      if (pin === null) return false;
+      if (pin !== APP_PIN) {
+        alert("PIN salah bro.");
+        return false;
+      }
+      return true;
+    }
+
+    function updatePrinterStatus(message) {
+      if (printerStatus) printerStatus.textContent = message;
+    }
+
 
     function priorityClass(priority) {
       if (priority === "Tinggi") return "high";
@@ -1945,6 +2152,7 @@
     }
 
     async function deleteItem(item) {
+      if (!requirePin("hapus barang")) return;
       const ok = confirm(`Hapus "${item.name}" dari list belanja?`);
       if (!ok) return;
       try {
@@ -1959,6 +2167,7 @@
     }
 
     async function toggleVariantDone(item, variantIndex) {
+      if (!requirePin("ceklis barang")) return;
       const data = normalizeItem(item);
       data.variants = data.variants.map((variant, index) => {
         if (index !== variantIndex) return variant;
@@ -1979,6 +2188,7 @@
     }
 
     async function toggleDone(item) {
+      if (!requirePin("ceklis barang")) return;
       const data = normalizeItem(item);
       const nextDone = !data.done;
       data.variants = data.variants.map(variant => ({ ...variant, done: nextDone }));
@@ -2243,8 +2453,340 @@
       detailItemList.appendChild(simpleList);
     }
 
+
+    function renderMiniStats(target, stats) {
+      target.innerHTML = "";
+      stats.forEach(([label, value]) => {
+        const box = document.createElement("div");
+        box.className = "detail-mini-stat";
+        const span = document.createElement("span");
+        span.textContent = label;
+        const strong = document.createElement("strong");
+        strong.textContent = value;
+        box.append(span, strong);
+        target.appendChild(box);
+      });
+    }
+
+    function renderPendingPage() {
+      if (!pendingItemList || !pendingSummary) return;
+      const pendingItems = sortItems(items).filter(item => hasPendingVariant(item));
+      const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+      renderMiniStats(pendingSummary, [
+        ["Model", pendingItems.length],
+        ["Belum Pcs", totalPcs],
+        ["Modal", formatRupiah(totalModal)]
+      ]);
+
+      pendingItemList.innerHTML = "";
+      if (!pendingItems.length) {
+        pendingItemList.innerHTML = `<div class="empty">Semua barang sudah selesai bro.</div>`;
+        return;
+      }
+
+      const simpleList = document.createElement("div");
+      simpleList.className = "simple-detail";
+
+      pendingItems.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const row = document.createElement("div");
+        row.className = "simple-row";
+
+        const head = document.createElement("div");
+        head.className = "simple-product-head";
+        const headLabel = document.createElement("span");
+        headLabel.textContent = "Barang";
+        const headValue = document.createElement("strong");
+        headValue.textContent = item.name;
+        head.append(headLabel, headValue);
+        row.appendChild(head);
+
+        item.variants.forEach((variant, variantIndex) => {
+          if (variant.done) return;
+
+          const variantRow = document.createElement("div");
+          variantRow.className = "simple-variant-row";
+
+          const checkWrap = document.createElement("div");
+          checkWrap.className = "variant-check-wrap";
+          const checkBtn = document.createElement("button");
+          checkBtn.className = "variant-check";
+          checkBtn.type = "button";
+          checkBtn.textContent = "";
+          checkBtn.title = "Tandai sudah selesai";
+          checkBtn.addEventListener("click", () => toggleVariantDone(item, variantIndex));
+          checkWrap.appendChild(checkBtn);
+
+          const warna = document.createElement("div");
+          warna.className = "simple-cell";
+          const warnaLabel = document.createElement("span");
+          warnaLabel.textContent = "Warna";
+          const warnaValue = document.createElement("strong");
+          warnaValue.textContent = variant.colorName || "Tanpa warna";
+          warna.append(warnaLabel, warnaValue);
+
+          const jumlah = document.createElement("div");
+          jumlah.className = "simple-cell";
+          const jumlahLabel = document.createElement("span");
+          jumlahLabel.textContent = "Jumlah";
+          const jumlahValue = document.createElement("strong");
+          jumlahValue.textContent = `${variant.qty} pcs`;
+          jumlah.append(jumlahLabel, jumlahValue);
+
+          variantRow.append(checkWrap, warna, jumlah);
+          row.appendChild(variantRow);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "simple-actions";
+        actions.style.gridTemplateColumns = "1fr";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editItem(item));
+
+        actions.append(editBtn);
+        row.appendChild(actions);
+        simpleList.appendChild(row);
+      });
+
+      pendingItemList.appendChild(simpleList);
+    }
+
+
+
+    function getPendingPrintRows() {
+      const rows = [];
+      sortItems(items).forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach(variant => {
+          if (variant.done) return;
+          rows.push({
+            supplier: getSupplierKey(item),
+            name: item.name || "Tanpa nama",
+            color: variant.colorName || "Tanpa warna",
+            qty: variant.qty,
+            note: item.note || ""
+          });
+        });
+      });
+      return rows;
+    }
+
+    function padLine(text = "", width = 32) {
+      const clean = String(text).replace(/\s+/g, " ").trim();
+      if (clean.length <= width) return [clean];
+      const words = clean.split(" ");
+      const lines = [];
+      let line = "";
+      words.forEach(word => {
+        if (!line) {
+          line = word;
+        } else if ((line + " " + word).length <= width) {
+          line += " " + word;
+        } else {
+          lines.push(line);
+          line = word;
+        }
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function centerLine(text, width = 32) {
+      const clean = String(text).trim();
+      const left = Math.max(0, Math.floor((width - clean.length) / 2));
+      return " ".repeat(left) + clean;
+    }
+
+    function makePrintText() {
+      const rows = getPendingPrintRows();
+      const lines = [];
+      const date = new Date().toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric"
+      });
+
+      lines.push(centerLine("LIST BELANJA HIJAB"));
+      lines.push(centerLine(date));
+      lines.push("================================");
+
+      if (!rows.length) {
+        lines.push("Semua barang sudah selesai.");
+        lines.push("================================");
+        lines.push("Total: 0 pcs");
+        return lines.join("\n") + "\n\n\n";
+      }
+
+      const groups = new Map();
+      rows.forEach(row => {
+        if (!groups.has(row.supplier)) groups.set(row.supplier, []);
+        groups.get(row.supplier).push(row);
+      });
+
+      let totalPcs = 0;
+      [...groups.entries()].forEach(([supplier, supplierRows], groupIndex) => {
+        if (groupIndex > 0) lines.push("--------------------------------");
+        padLine(supplier, 32).forEach(line => lines.push(line));
+        supplierRows.forEach((row, index) => {
+          totalPcs += Number(row.qty) || 0;
+          padLine(`${index + 1}. ${row.name}`, 32).forEach(line => lines.push(line));
+          padLine(`   ${row.color} - ${row.qty} pcs`, 32).forEach(line => lines.push(line));
+          if (row.note) padLine(`   Catatan: ${row.note}`, 32).forEach(line => lines.push(line));
+        });
+      });
+
+      lines.push("================================");
+      lines.push(`Total pcs: ${totalPcs}`);
+      lines.push("\n\n");
+      return lines.join("\n");
+    }
+
+
+    function makePrintPayload() {
+      return JSON.stringify({
+        title: "LIST BELANJA TOKO HIJAB",
+        printerName: PRINTER_NAME,
+        paperMm: 80,
+        createdAt: new Date().toISOString(),
+        items: getPendingPrintRows().map(row => ({
+          supplierName: row.supplier,
+          name: row.name,
+          colorName: row.color,
+          qty: row.qty,
+          unit: "pcs",
+          note: row.note || ""
+        }))
+      });
+    }
+
+    function isAndroidNativePrinterReady() {
+      return !!(window.AndroidPrinter && typeof window.AndroidPrinter.printShoppingList === "function");
+    }
+
+    function checkAndroidNativePrinter() {
+      if (window.AndroidPrinter && typeof window.AndroidPrinter.checkPrinter === "function") {
+        window.AndroidPrinter.checkPrinter();
+        updatePrinterStatus(`Cek printer native: ${PRINTER_NAME}`);
+        return;
+      }
+      alert("Mode Android Studio belum terdeteksi bro. Buka file ini dari APK WebView, bukan langsung dari browser.");
+    }
+
+    function sendNativePrint() {
+      if (isAndroidNativePrinterReady()) {
+        window.AndroidPrinter.printShoppingList(makePrintPayload());
+        updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME}`);
+        return;
+      }
+      alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
+    }
+
+    function openPrintPreview() {
+      const text = makePrintText();
+      printPreviewText.textContent = text;
+      updatePrinterStatus(`Printer Android: ${PRINTER_NAME} • Kertas 80mm`);
+      printModal.classList.add("show");
+    }
+
+    function closePrintPreview() {
+      printModal.classList.remove("show");
+    }
+
+    async function chooseBluetoothPrinter() {
+      if (!navigator.bluetooth) {
+        alert("Bluetooth belum tersedia di WebView ini bro. Di Web2APK, aktifkan Web Bluetooth / Bluetooth permission dulu.");
+        return null;
+      }
+
+      updatePrinterStatus(`Mencari printer ${PRINTER_NAME}...`);
+      const optionalServices = [
+        "0000ffe0-0000-1000-8000-00805f9b34fb",
+        "0000ff00-0000-1000-8000-00805f9b34fb",
+        "000018f0-0000-1000-8000-00805f9b34fb",
+        "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+      ];
+
+      try {
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          filters: [
+            { name: PRINTER_NAME },
+            { namePrefix: "RPP02N" }
+          ],
+          optionalServices
+        });
+
+        bluetoothDevice.addEventListener("gattserverdisconnected", () => {
+          printerCharacteristic = null;
+          updatePrinterStatus(`Printer terputus: ${PRINTER_NAME}`);
+        });
+
+        const server = await bluetoothDevice.gatt.connect();
+        const services = await server.getPrimaryServices();
+
+        for (const service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (const characteristic of characteristics) {
+            if (characteristic.properties.write || characteristic.properties.writeWithoutResponse) {
+              printerCharacteristic = characteristic;
+              updatePrinterStatus(`Printer siap: ${bluetoothDevice.name || PRINTER_NAME}`);
+              showToast("Printer siap");
+              return printerCharacteristic;
+            }
+          }
+        }
+
+        alert("Printer ketemu, tapi channel cetaknya belum ketemu bro.");
+        updatePrinterStatus(`Printer belum siap: ${PRINTER_NAME}`);
+        return null;
+      } catch (error) {
+        console.error(error);
+        updatePrinterStatus(`Printer belum dipilih: ${PRINTER_NAME}`);
+        alert("Gagal memilih printer bro. Pastikan Bluetooth aktif dan printer RPP02N-FF57 menyala.");
+        return null;
+      }
+    }
+
+    async function sendTextToPrinter(text) {
+      const characteristic = printerCharacteristic || await chooseBluetoothPrinter();
+      if (!characteristic) return;
+
+      const encoder = new TextEncoder();
+      const escInit = new Uint8Array([0x1b, 0x40]);
+      const cutFeed = new Uint8Array([0x0a, 0x0a, 0x0a]);
+      const body = encoder.encode(text);
+      const payload = new Uint8Array(escInit.length + body.length + cutFeed.length);
+      payload.set(escInit, 0);
+      payload.set(body, escInit.length);
+      payload.set(cutFeed, escInit.length + body.length);
+
+      try {
+        for (let offset = 0; offset < payload.length; offset += 180) {
+          const chunk = payload.slice(offset, offset + 180);
+          if (characteristic.properties.writeWithoutResponse && characteristic.writeValueWithoutResponse) {
+            await characteristic.writeValueWithoutResponse(chunk);
+          } else {
+            await characteristic.writeValue(chunk);
+          }
+          await new Promise(resolve => setTimeout(resolve, 35));
+        }
+        showToast("List dikirim ke printer");
+        updatePrinterStatus(`Berhasil dikirim: ${bluetoothDevice?.name || PRINTER_NAME}`);
+      } catch (error) {
+        console.error(error);
+        printerCharacteristic = null;
+        alert("Gagal cetak bro. Coba pilih printer ulang.");
+        updatePrinterStatus(`Gagal cetak: ${PRINTER_NAME}`);
+      }
+    }
+
+
     function renderList() {
       renderSupplierList();
+      renderPendingPage();
       if (selectedSupplier && pageDetail.classList.contains("active")) {
         renderSupplierDetail(selectedSupplier);
       }
@@ -2299,27 +2841,14 @@
     resetBtn.addEventListener("click", resetForm);
     searchInput.addEventListener("input", renderList);
     statusFilter.addEventListener("change", renderList);
-    printBtn.addEventListener("click", () => {
-      if (!pageDetail.classList.contains("active")) {
-        alert("Buka detail supplier dulu bro, baru print.");
-        return;
-      }
-      window.print();
-    });
 
-    clearDoneBtn.addEventListener("click", async () => {
-      const doneVariantCount = items.reduce((sum, item) => sum + getDoneQty(item), 0);
-      if (!doneVariantCount) return alert("Belum ada warna yang selesai dibeli bro.");
-      const ok = confirm(`Hapus warna yang sudah dibeli? Total ${doneVariantCount} pcs akan dihapus dari list.`);
-      if (!ok) return;
-      try {
-        await clearDoneVariants();
-        await refreshItems();
-        showToast("Warna selesai dihapus");
-      } catch (error) {
-        console.error(error);
-        alert("Gagal menghapus barang selesai bro.");
-      }
+
+    if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
+    if (closePrintBtn) closePrintBtn.addEventListener("click", closePrintPreview);
+    if (selectPrinterBtn) selectPrinterBtn.addEventListener("click", checkAndroidNativePrinter);
+    if (sendPrintBtn) sendPrintBtn.addEventListener("click", sendNativePrint);
+    if (printModal) printModal.addEventListener("click", event => {
+      if (event.target === printModal) closePrintPreview();
     });
 
     async function init() {
