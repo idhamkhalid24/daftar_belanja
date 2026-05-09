@@ -1477,6 +1477,22 @@
       }
     }
 
+    /* FIX: Halaman detail supplier dibuat bersih, tanpa card ringkasan atas */
+    #pageDetail .detail-summary {
+      display: none !important;
+    }
+
+    #pageDetail .detail-top {
+      padding-bottom: 10px;
+    }
+
+    @media screen and (max-width: 480px) {
+      #pageDetail .detail-top {
+        padding-bottom: 7px;
+      }
+    }
+
+
     .print-actions {
       display: grid;
       grid-template-columns: 1fr;
@@ -3039,24 +3055,7 @@
 
       detailSupplierName.textContent = supplierName || UNSET_SUPPLIER;
       if (detailSupplierNote) detailSupplierNote.textContent = "";
-      detailSummary.innerHTML = "";
-
-      const stats = [
-        ["Model", supplierItems.length],
-        ["Belum Pcs", totalPcs],
-        ["Modal", formatRupiah(totalModal)]
-      ];
-
-      stats.forEach(([label, value]) => {
-        const box = document.createElement("div");
-        box.className = "detail-mini-stat";
-        const span = document.createElement("span");
-        span.textContent = label;
-        const strong = document.createElement("strong");
-        strong.textContent = value;
-        box.append(span, strong);
-        detailSummary.appendChild(box);
-      });
+      if (detailSummary) detailSummary.innerHTML = "";
 
       detailItemList.innerHTML = "";
       if (!supplierItems.length) {
