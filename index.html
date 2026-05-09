@@ -1482,6 +1482,12 @@
       display: none !important;
     }
 
+
+    /* FIX FINAL: summary utama Model / Belum / Total Pcs / Total Modal hilang saat masuk detail supplier */
+    body.detail-supplier-clean .summary {
+      display: none !important;
+    }
+
     #pageDetail .detail-top {
       padding-bottom: 10px;
     }
@@ -2024,6 +2030,9 @@
       pageList.classList.toggle("active", pageName === "list");
       pagePending.classList.toggle("active", pageName === "pending");
       pageDetail.classList.toggle("active", pageName === "detail");
+      document.body.classList.toggle("detail-supplier-clean", pageName === "detail");
+      const topSummary = document.querySelector(".summary");
+      if (topSummary) topSummary.hidden = pageName === "detail";
       currentPageName = pageName;
 
       navButtons.forEach(button => {
@@ -2771,7 +2780,6 @@
     async function markSelectedVariantsDone(itemList, pendingOnly = false) {
       const selectedKeys = new Set(getSelectedVisibleKeys(itemList, pendingOnly));
       if (!selectedKeys.size) return showToast("Pilih data dulu bro");
-      if (!(await requirePin("ceklis massal"))) return;
 
       try {
         let changedCount = 0;
@@ -2869,7 +2877,6 @@
     }
 
     async function toggleVariantDone(item, variantIndex) {
-      if (!(await requirePin("ceklis barang"))) return;
       const data = normalizeItem(item);
       data.variants = data.variants.map((variant, index) => {
         if (index !== variantIndex) return variant;
@@ -2890,7 +2897,6 @@
     }
 
     async function toggleDone(item) {
-      if (!(await requirePin("ceklis barang"))) return;
       const data = normalizeItem(item);
       const nextDone = !data.done;
       data.variants = data.variants.map(variant => ({ ...variant, done: nextDone }));
