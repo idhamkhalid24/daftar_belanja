@@ -345,29 +345,42 @@
 
     .saved-panel {
       display: none;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 7px;
-      padding: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 6px;
+      padding: 6px;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 11px;
       background: #fff7fb;
+      max-height: 86px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 3;
+      width: 100%;
     }
 
     .saved-panel.show {
-      display: flex;
+      display: grid;
     }
 
     .saved-chip {
       border: 0;
-      border-radius: 999px;
+      border-radius: 9px;
       background: #fff;
       color: #831843;
       border: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
-      padding: 7px 9px;
+      padding: 6px 7px;
       cursor: pointer;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+      line-height: 1.2;
     }
 
     .saved-empty {
@@ -965,12 +978,19 @@
       }
 
       .saved-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 4px;
-        margin-top: 5px;
-        padding: 6px;
+        margin-top: 4px;
+        padding: 5px;
         border-radius: 10px;
-        max-height: 92px;
+        max-height: 72px;
         overflow-y: auto;
+      }
+
+      .saved-chip {
+        font-size: 9.5px;
+        padding: 5px 6px;
+        border-radius: 8px;
       }
 
       .toolbar {
@@ -1250,12 +1270,14 @@
 
           <div>
             <label for="name">Nama Barang / Model</label>
-            <input id="name" type="text" list="itemNameOptions" placeholder="" autocomplete="off" required />
+            <input id="name" type="text" placeholder="" autocomplete="off" required />
+            <div class="saved-panel smart-suggest" id="itemNameSavedPanel"></div>
           </div>
 
           <div>
             <label for="supplierName">Nama Supplier</label>
-            <input id="supplierName" type="text" list="supplierOptions" placeholder="" autocomplete="off" />
+            <input id="supplierName" type="text" placeholder="" autocomplete="off" />
+            <div class="saved-panel smart-suggest" id="supplierSavedPanel"></div>
           </div>
 
           <div class="row">
@@ -1274,8 +1296,8 @@
             <div class="variant-head">
               <strong>Warna dan Jumlah Pcs</strong>
               <div class="variant-actions">
-                <button class="small-btn" type="button" data-saved-target="colorSavedPanel">Warna tersimpan ▾</button>
-                <button class="small-btn" type="button" id="addVariantBtn">+ Tambah Warna</button>
+                <button class="small-btn" type="button" data-saved-target="colorSavedPanel">Warna ▾</button>
+                <button class="small-btn" type="button" id="addVariantBtn">+ Warna</button>
               </div>
             </div>
             <div class="variant-list" id="variantList"></div>
@@ -1648,7 +1670,6 @@
       const color = document.createElement("input");
       color.className = "variant-color";
       color.type = "text";
-      color.setAttribute("list", "colorOptions");
       color.placeholder = "";
       color.autocomplete = "off";
       color.value = safeText(colorName);
@@ -1746,14 +1767,15 @@
     function fillSavedPanel(panel, values, onClick, emptyText) {
       if (!panel) return;
       panel.innerHTML = "";
-      if (!values.length) {
+      const limitedValues = values.slice(0, 8);
+      if (!limitedValues.length) {
         const empty = document.createElement("span");
         empty.className = "saved-empty";
         empty.textContent = emptyText;
         panel.appendChild(empty);
         return;
       }
-      values.forEach(value => panel.appendChild(makeSavedChip(value, () => onClick(value))));
+      limitedValues.forEach(value => panel.appendChild(makeSavedChip(value, () => onClick(value))));
     }
 
     function renderSavedPanels() {
@@ -1833,6 +1855,22 @@
         if (panel !== target) panel.classList.remove("show");
       });
       target.classList.toggle("show");
+    });
+
+    document.addEventListener("click", event => {
+      const isSuggestClick = event.target.closest(".saved-panel, [data-saved-target], #name, #supplierName, .variant-color");
+      if (isSuggestClick) return;
+      document.querySelectorAll(".saved-panel").forEach(panel => panel.classList.remove("show"));
+    });
+
+    nameInput.addEventListener("focus", () => {
+      renderSavedPanels();
+      if (nameInput.value.trim() && itemNameSavedPanel) itemNameSavedPanel.classList.add("show");
+    });
+
+    supplierInput.addEventListener("focus", () => {
+      renderSavedPanels();
+      if (supplierInput.value.trim() && supplierSavedPanel) supplierSavedPanel.classList.add("show");
     });
 
     nameInput.addEventListener("input", () => {
