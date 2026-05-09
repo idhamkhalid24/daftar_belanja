@@ -1,0 +1,4068 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>List Belanja Toko Hijab</title>
+  <style>
+    :root {
+      --card: #ffffff;
+      --text: #241528;
+      --muted: #7c647f;
+      --primary: #db2777;
+      --primary-dark: #be185d;
+      --green: #16a34a;
+      --red: #dc2626;
+      --border: #f1d9e8;
+      --soft: #fdf2f8;
+      --shadow: 0 12px 28px rgba(131, 24, 67, 0.10);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #fff1f7, #fff7ed 48%, #fdf2f8);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(760px, 94%);
+      margin: 0 auto;
+      padding: 10px 0 96px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #831843, #db2777, #f97316);
+      color: #fff;
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 7vw, 34px);
+      letter-spacing: -0.05em;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.55;
+      font-size: 12px;
+    }
+
+    .reset-top {
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+
+
+    .hero-actions {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .printer-logo-btn {
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .printer-logo-btn:active {
+      transform: scale(0.96);
+      background: rgba(255,255,255,0.26);
+    }
+
+    .today {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      width: min(760px, 94%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 9px;
+      box-shadow: 0 18px 45px rgba(131, 24, 67, 0.18);
+      z-index: 999;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-btn {
+      border: 0;
+      border-radius: 17px;
+      padding: 12px 8px;
+      background: transparent;
+      color: #9d174d;
+      font-weight: 900;
+      cursor: pointer;
+      min-height: 50px;
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(219, 39, 119, 0.22);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-detail { touch-action: pan-y; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 9px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -0.04em;
+      overflow-wrap: anywhere;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .card-header { padding: 12px 12px 0; }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-header p {
+      display: none;
+    }
+
+    form {
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      color: #56304d;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff9fc;
+      border-radius: 11px;
+      padding: 10px;
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(219, 39, 119, 0.12);
+    }
+
+    input[readonly] {
+      color: #9d174d;
+      font-weight: 900;
+      background: #fdf2f8;
+    }
+
+    textarea {
+      min-height: 56px;
+      resize: vertical;
+    }
+
+    .row, .btn-row, .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 42px;
+    }
+
+    .btn-row.single-action {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:active { background: var(--primary-dark); transform: scale(0.99); }
+    .btn-light { background: #fce7f3; color: #9d174d; }
+    .btn-danger { background: #fee2e2; color: #991b1b; }
+    .btn-green { background: #dcfce7; color: #166534; }
+
+    .home-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 0 12px 12px;
+    }
+
+    .variant-box {
+      border: 1px solid var(--border);
+      background: #fff7fb;
+      border-radius: 14px;
+      padding: 9px;
+      overflow: visible;
+    }
+
+    .form-card {
+      overflow: visible;
+    }
+
+    .variant-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .variant-head strong {
+      font-size: 13px;
+      color: #56304d;
+    }
+
+    .variant-list {
+      display: grid;
+      gap: 7px;
+      overflow: visible;
+    }
+
+    .variant-row {
+      display: grid;
+      grid-template-columns: 1fr 82px 38px;
+      gap: 6px;
+      align-items: end;
+      scroll-margin-top: 120px;
+      scroll-margin-bottom: 120px;
+    }
+
+    .variant-row label {
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .remove-variant {
+      border: 0;
+      border-radius: 13px;
+      height: 42px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .small-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 9px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .hint {
+      display: none;
+    }
+
+    .saved-wrap {
+      margin-top: 6px;
+    }
+
+    .saved-toggle {
+      border: 0;
+      border-radius: 999px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .saved-panel {
+      display: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 6px;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #fff7fb;
+      max-height: 86px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 3;
+      width: 100%;
+    }
+
+    .saved-panel.show {
+      display: grid;
+    }
+
+    .saved-chip {
+      border: 0;
+      border-radius: 9px;
+      background: #fff;
+      color: #831843;
+      border: 1px solid var(--border);
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 6px 7px;
+      cursor: pointer;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .saved-empty {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .variant-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .variant-tools {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 7px;
+    }
+
+    .add-color-btn {
+      min-height: 36px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: none;
+    }
+
+    .add-color-btn:active {
+      background: #fbcfe8;
+      transform: scale(0.99);
+    }
+
+    .add-color-btn,
+    .saved-color-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-color-btn {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .saved-color-btn {
+      grid-column: 2 / 4;
+      min-height: 44px;
+      border-radius: 14px;
+      padding: 10px 9px;
+      font-size: 12px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 110px;
+      gap: 6px;
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .quick-actions {
+      padding: 0 8px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list {
+      display: grid;
+      gap: 5px;
+      padding: 8px;
+      background: #fff7fb;
+      min-height: 160px;
+    }
+
+    .supplier-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 9px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(131, 24, 67, 0.06);
+    }
+
+    .supplier-card strong {
+      display: block;
+      font-size: 13px;
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+
+    .supplier-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+    }
+
+    .supplier-arrow {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fce7f3;
+      color: #9d174d;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      align-self: center;
+    }
+
+    .detail-top {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: fit-content;
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .detail-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .detail-title p {
+      display: none;
+    }
+
+    .detail-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .detail-mini-stat {
+      background: #fff7fb;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .detail-mini-stat span {
+      display: block;
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .detail-mini-stat strong {
+      display: block;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-detail {
+      display: grid;
+      gap: 7px;
+    }
+
+    .simple-row {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .simple-product-head {
+      padding: 9px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .simple-product-head span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .simple-product-head strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-product-head.with-total {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .product-total-pill {
+      justify-self: end;
+      align-self: start;
+      background: #fce7f3;
+      border: 1px solid var(--border);
+      color: #9d174d;
+      border-radius: 999px;
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: 0 5px 12px rgba(131, 24, 67, 0.07);
+    }
+
+    .simple-variant-row {
+      display: grid;
+      grid-template-columns: 34px 1fr 0.8fr;
+      border-bottom: 1px solid var(--border);
+      align-items: stretch;
+    }
+
+    .simple-variant-row.variant-done .simple-cell strong {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .variant-check-wrap {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .variant-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+    }
+
+    .variant-check.done {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .simple-variant-row:last-child {
+      border-bottom: 0;
+    }
+
+    .simple-cell {
+      padding: 8px 9px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .simple-cell:last-child {
+      border-right: 0;
+    }
+
+    .simple-cell span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .simple-cell strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 7px;
+      background: #fff7fb;
+      border-top: 1px solid var(--border);
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
+      margin-top: 2px;
+    }
+
+    .item.done .check {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .item-main h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .item.done h3 {
+      text-decoration: line-through;
+      color: #7c647f;
+    }
+
+    .meta, .variant-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .badge.qty { background: #ffedd5; color: #9a3412; }
+    .badge.color { background: #f3e8ff; color: #6b21a8; }
+    .badge.supplier { background: #e0f2fe; color: #075985; }
+    .badge.high { background: #fee2e2; color: #991b1b; }
+    .badge.medium { background: #fef3c7; color: #92400e; }
+    .badge.low { background: #dcfce7; color: #166534; }
+
+    .note {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .icon-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 7px 8px;
+      cursor: pointer;
+      background: var(--soft);
+      color: #831843;
+      font-weight: 800;
+      font-size: 11px;
+      min-width: 48px;
+    }
+
+    .icon-btn.danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 18px 8px;
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 92px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: #831843;
+      color: #fff;
+      padding: 12px 15px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 800;
+      pointer-events: none;
+      transition: 0.22s ease;
+      z-index: 1000;
+      width: max-content;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .db-info {
+      display: none;
+    }
+
+    @media (max-width: 620px) {
+      .app { width: 94%; padding-top: 12px; }
+      .hero { padding: 20px; }
+      .summary { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .stat { padding: 12px 10px; }
+      .stat strong { font-size: 21px; }
+      .row, .btn-row, .toolbar, .quick-actions { grid-template-columns: 1fr; }
+      .variant-row { grid-template-columns: 1fr 92px 42px; }
+      .detail-summary { grid-template-columns: repeat(3, 1fr); }
+      .simple-variant-row { grid-template-columns: 32px 1fr 0.7fr; }
+      .simple-cell { border-right: 0; border-bottom: 1px solid var(--border); }
+      .simple-cell:last-child { border-bottom: 0; }
+      .simple-actions { grid-template-columns: repeat(3, 1fr); }
+      .item { grid-template-columns: auto 1fr; }
+      .item-actions { grid-column: 1 / -1; flex-direction: row; }
+      .icon-btn { flex: 1; }
+    }
+    @media screen and (max-width: 480px) {
+      html, body {
+        width: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        background: #fff7fb;
+      }
+
+      .app {
+        width: 100%;
+        padding: 6px 7px 112px;
+      }
+
+      .hero {
+        border-radius: 14px;
+        padding: 10px;
+        margin-bottom: 7px;
+      }
+
+      .hero-top {
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .hero h1 {
+        font-size: 20px;
+        line-height: 1.05;
+        margin-bottom: 4px;
+      }
+
+      .hero p {
+        font-size: 10.5px;
+        line-height: 1.35;
+        max-width: 245px;
+      }
+
+      .reset-top {
+        padding: 6px 9px;
+        font-size: 10.5px;
+        min-height: 30px;
+      }
+
+
+
+      .hero-actions {
+        gap: 6px;
+      }
+
+      .printer-logo-btn {
+        width: 31px;
+        height: 31px;
+        font-size: 15px;
+      }
+
+      .today {
+        margin-top: 7px;
+        padding: 5px 8px;
+        font-size: 10.5px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        margin-bottom: 7px;
+      }
+
+      .stat {
+        border-radius: 10px;
+        padding: 6px 5px;
+        box-shadow: 0 4px 12px rgba(131, 24, 67, 0.06);
+      }
+
+      .stat span {
+        font-size: 7.5px;
+        letter-spacing: 0.02em;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .stat strong {
+        font-size: 12.5px;
+        line-height: 1.15;
+      }
+
+      .card {
+        border-radius: 12px;
+        margin-bottom: 7px;
+        box-shadow: 0 5px 14px rgba(131, 24, 67, 0.07);
+      }
+
+      .card-header {
+        padding: 9px 9px 0;
+      }
+
+      .card-header h2 {
+        font-size: 14px;
+      }
+
+      .card-header p {
+        font-size: 10.5px;
+        line-height: 1.3;
+      }
+
+      form {
+        padding: 9px;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 10.5px;
+        margin-bottom: 3px;
+      }
+
+      input, select, textarea {
+        border-radius: 9px;
+        padding: 8px;
+        font-size: 14px;
+        min-height: 36px;
+      }
+
+      textarea {
+        min-height: 44px;
+      }
+
+      .row {
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+      }
+
+      .btn-row, .quick-actions {
+        gap: 5px;
+      }
+
+      .btn {
+        min-height: 36px;
+        border-radius: 10px;
+        padding: 8px 9px;
+        font-size: 12px;
+      }
+
+      .home-actions {
+        padding: 0 9px 9px;
+      }
+
+      .variant-box {
+        border-radius: 11px;
+        padding: 7px;
+      }
+
+      .variant-head {
+        gap: 5px;
+        margin-bottom: 5px;
+      }
+
+      .variant-head strong {
+        font-size: 11px;
+        line-height: 1.2;
+      }
+
+      .variant-actions {
+        gap: 4px;
+      }
+
+      .variant-tools {
+        gap: 4px;
+        margin-bottom: 5px;
+      }
+
+      .add-color-btn {
+        min-height: 38px;
+        border-radius: 10px;
+        padding: 8px 8px;
+        font-size: 10px;
+      }
+
+      .small-btn,
+      .saved-toggle,
+      .saved-chip {
+        font-size: 10px;
+        padding: 6px 7px;
+      }
+
+      .variant-list {
+        gap: 5px;
+      }
+
+      .variant-row {
+        grid-template-columns: minmax(0, 1fr) 62px 32px;
+        gap: 4px;
+      }
+
+      .variant-row label {
+        font-size: 10px;
+        margin-bottom: 2px;
+      }
+
+      .variant-qty {
+        text-align: center;
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      .remove-variant {
+        height: 36px;
+        border-radius: 9px;
+        font-size: 16px;
+      }
+
+      .hint {
+        font-size: 9.5px;
+        line-height: 1.25;
+        margin-top: 4px;
+      }
+
+      .saved-wrap {
+        margin-top: 4px;
+      }
+
+      .saved-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        margin-top: 4px;
+        padding: 5px;
+        border-radius: 10px;
+        max-height: 72px;
+        overflow-y: auto;
+      }
+
+      .saved-chip {
+        font-size: 9.5px;
+        padding: 5px 6px;
+        border-radius: 8px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr 94px;
+        gap: 4px;
+        padding: 6px;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr 1fr;
+        padding: 0 6px 6px;
+      }
+
+      .list {
+        gap: 4px;
+        padding: 6px;
+        min-height: 120px;
+      }
+
+      .supplier-card {
+        border-radius: 9px;
+        padding: 7px 8px;
+        gap: 5px;
+        box-shadow: none;
+      }
+
+      .supplier-card strong {
+        font-size: 12px;
+        margin-bottom: 1px;
+      }
+
+      .supplier-card span {
+        font-size: 9px;
+        line-height: 1.2;
+      }
+
+      .supplier-arrow {
+        width: 19px;
+        height: 19px;
+        font-size: 13px;
+      }
+
+      .detail-top {
+        gap: 5px;
+        padding: 7px;
+      }
+
+      .back-btn {
+        padding: 6px 8px;
+        font-size: 10.5px;
+      }
+
+      .detail-title h2 {
+        font-size: 15px;
+      }
+
+      .detail-title p {
+        font-size: 9.5px;
+        line-height: 1.25;
+      }
+
+      .detail-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .detail-mini-stat {
+        border-radius: 9px;
+        padding: 6px 5px;
+      }
+
+      .detail-mini-stat span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .detail-mini-stat strong {
+        font-size: 11.5px;
+        line-height: 1.15;
+      }
+
+      .simple-detail {
+        gap: 5px;
+      }
+
+      .simple-row {
+        border-radius: 9px;
+      }
+
+      .simple-product-head {
+        padding: 7px;
+      }
+
+      .simple-product-head span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+      }
+
+      .simple-product-head strong {
+        font-size: 13px;
+        line-height: 1.2;
+      }
+
+      .simple-product-head.with-total {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 5px;
+      }
+
+      .product-total-pill {
+        padding: 6px 7px;
+        font-size: 9.5px;
+        max-width: 118px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px minmax(0, 1fr) 72px;
+      }
+
+      .variant-check {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        border-width: 1.5px;
+      }
+
+      .simple-cell {
+        padding: 6px 7px;
+      }
+
+      .simple-cell span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+      }
+
+      .simple-cell strong {
+        font-size: 11.5px;
+        line-height: 1.2;
+      }
+
+      .simple-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 5px;
+        padding: 6px;
+      }
+
+      .icon-btn {
+        border-radius: 8px;
+        padding: 6px 7px;
+        font-size: 10.5px;
+        min-height: 32px;
+      }
+
+      .empty {
+        padding: 14px 7px;
+        font-size: 11px;
+      }
+
+      .db-info {
+        font-size: 10px;
+        line-height: 1.3;
+        margin-top: 6px;
+        padding: 0 8px;
+      }
+
+      .bottom-nav {
+        width: calc(100% - 14px);
+        bottom: 7px;
+        border-radius: 17px;
+        padding: 6px;
+        gap: 5px;
+      }
+
+      .nav-btn {
+        min-height: 40px;
+        border-radius: 12px;
+        padding: 7px 4px;
+        font-size: 11px;
+      }
+
+      .toast {
+        bottom: 68px;
+        padding: 9px 11px;
+        font-size: 11px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .hero p {
+        display: none;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat strong {
+        font-size: 14px;
+      }
+
+      .variant-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .variant-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .variant-tools {
+        grid-template-columns: minmax(0, 1fr) 64px 32px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px 1fr 64px;
+      }
+    }
+
+
+    /* FIX: card ringkasan Model / Belum / Total Pcs / Total Modal jadi 2 atas + 2 bawah di Android */
+    @media screen and (max-width: 480px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .stat {
+        border-radius: 12px !important;
+        padding: 9px 8px !important;
+      }
+
+      .stat span {
+        font-size: 8.5px !important;
+        margin-bottom: 3px !important;
+        white-space: nowrap !important;
+      }
+
+      .stat strong {
+        font-size: 16px !important;
+        line-height: 1.15 !important;
+      }
+    }
+
+
+
+
+    /* FIX PIN MODAL: tampilan custom + keyboard angka otomatis */
+    .pin-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(36, 21, 40, 0.48);
+      z-index: 1400;
+      backdrop-filter: blur(8px);
+    }
+
+    .pin-modal.show {
+      display: flex;
+    }
+
+    .pin-dialog {
+      width: min(390px, 94vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(36, 21, 40, 0.26);
+      padding: 18px;
+      text-align: center;
+      animation: pinPop 0.18s ease-out;
+    }
+
+    @keyframes pinPop {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .pin-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 10px;
+      background: linear-gradient(135deg, #fce7f3, #ffedd5);
+      color: #9d174d;
+      font-size: 25px;
+      box-shadow: 0 10px 25px rgba(219, 39, 119, 0.14);
+    }
+
+    .pin-dialog h3 {
+      margin: 0 0 5px;
+      color: var(--text);
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .pin-dialog p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .pin-input {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 18px;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.28em;
+      color: #831843;
+      background: #fff7fb;
+      border: 2px solid var(--border);
+      outline: none;
+      -webkit-text-security: disc;
+    }
+
+    .pin-input:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 5px rgba(219, 39, 119, 0.13);
+    }
+
+    .pin-error {
+      min-height: 18px;
+      margin: 8px 0 2px;
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pin-actions {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    body.pin-lock {
+      overflow: hidden;
+    }
+
+    @media screen and (max-width: 480px) {
+      .pin-modal {
+        padding: 12px;
+        align-items: center;
+      }
+
+      .pin-dialog {
+        width: 100%;
+        border-radius: 20px;
+        padding: 15px;
+      }
+
+      .pin-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        font-size: 23px;
+      }
+
+      .pin-dialog h3 {
+        font-size: 18px;
+      }
+
+      .pin-dialog p {
+        font-size: 11px;
+      }
+
+      .pin-input {
+        min-height: 54px;
+        border-radius: 16px;
+        font-size: 26px;
+      }
+
+      .pin-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* FIX: Halaman detail supplier dibuat bersih, tanpa card ringkasan atas */
+    #pageDetail .detail-summary {
+      display: none !important;
+    }
+
+
+    /* FIX FINAL: summary utama Model / Belum / Total Pcs / Total Modal hilang saat masuk detail supplier */
+    body.detail-supplier-clean .summary {
+      display: none !important;
+    }
+
+    #pageDetail .detail-top {
+      padding-bottom: 10px;
+    }
+
+    @media screen and (max-width: 480px) {
+      #pageDetail .detail-top {
+        padding-bottom: 7px;
+      }
+    }
+
+
+    .print-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      padding: 0 10px 10px;
+      background: #fff;
+    }
+
+    .print-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(36, 21, 40, 0.42);
+      z-index: 1200;
+    }
+
+    .print-modal.show {
+      display: flex;
+    }
+
+    .print-dialog {
+      width: min(520px, 96vw);
+      max-height: 86vh;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 22px 70px rgba(36, 21, 40, 0.24);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .print-head {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      background: #fff7fb;
+    }
+
+    .print-head h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .print-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .print-preview {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      background: #fff;
+      color: #111827;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .print-footer {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr 1fr;
+      gap: 7px;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      background: #fff7fb;
+    }
+
+    @media screen and (max-width: 480px) {
+      .print-actions {
+        padding: 0 7px 7px;
+      }
+
+      .print-dialog {
+        width: 100%;
+        max-height: 88vh;
+        border-radius: 14px;
+      }
+
+      .print-head {
+        padding: 10px;
+      }
+
+      .print-head h3 {
+        font-size: 14px;
+      }
+
+      .print-head p {
+        font-size: 10px;
+      }
+
+      .print-preview {
+        padding: 10px;
+        font-size: 11px;
+      }
+
+      .print-footer {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px;
+      }
+    }
+
+
+    /* FIX: select data massal untuk ceklis / hapus */
+    .bulk-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 7px;
+      margin-bottom: 7px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(131, 24, 67, 0.06);
+    }
+
+    .bulk-count {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #56304d;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .bulk-count small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .bulk-actions .icon-btn {
+      min-width: 0;
+      min-height: 34px;
+      padding: 7px 6px;
+      border-radius: 10px;
+      font-size: 10.5px;
+    }
+
+    .bulk-actions .icon-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .simple-variant-row {
+      grid-template-columns: 34px 34px minmax(0, 1fr) 0.8fr;
+    }
+
+    .simple-variant-row.variant-selected {
+      background: #fff7fb;
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .select-check-wrap {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .select-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .select-check.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    @media screen and (max-width: 480px) {
+      .bulk-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        padding: 6px;
+        border-radius: 10px;
+      }
+
+      .bulk-actions .icon-btn {
+        min-height: 32px;
+        font-size: 10px;
+        padding: 6px 5px;
+      }
+
+      .bulk-count {
+        font-size: 10px;
+      }
+
+      .bulk-count small {
+        font-size: 9px;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px 28px minmax(0, 1fr) 72px !important;
+      }
+
+      .select-check {
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        border-width: 1.5px;
+        font-size: 10px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .simple-variant-row {
+        grid-template-columns: 27px 27px minmax(0, 1fr) 62px !important;
+      }
+    }
+
+
+
+    /* FIX: Kalkulator budget belanja */
+    .budget-box {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .budget-actions {
+      display: grid;
+      grid-template-columns: 1fr 0.7fr;
+      gap: 7px;
+    }
+
+    .budget-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 700;
+      background: #fff7fb;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .budget-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .budget-mini-stat {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .budget-mini-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .budget-mini-stat strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-action-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .budget-result-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .budget-result-card strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-result-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-top: 3px;
+      overflow-wrap: anywhere;
+    }
+
+    .budget-price {
+      color: #9d174d;
+      font-weight: 900;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media screen and (max-width: 480px) {
+      .bottom-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .nav-btn {
+        font-size: 10px;
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+
+      .budget-box {
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .budget-actions {
+        grid-template-columns: 1fr 0.65fr;
+        gap: 5px;
+      }
+
+      .budget-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .budget-mini-stat {
+        border-radius: 9px;
+        padding: 6px 5px;
+      }
+
+      .budget-mini-stat span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .budget-mini-stat strong {
+        font-size: 10.5px;
+      }
+
+      .budget-result-card {
+        border-radius: 10px;
+        padding: 7px;
+        gap: 6px;
+      }
+
+      .budget-result-card strong {
+        font-size: 12px;
+      }
+
+      .budget-result-card span {
+        font-size: 9px;
+      }
+
+      .budget-price {
+        font-size: 10.5px;
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
+      .page-detail { display: block !important; }
+      .app { width: 100%; padding: 0; }
+      .card, .stat, .item { box-shadow: none; }
+      .list { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>List Belanja</h1>
+          
+        </div>
+        <div class="hero-actions">
+          <button class="printer-logo-btn" type="button" id="printerBtn" aria-label="Cetak List Belanja" title="Cetak List Belanja">🖨️</button>
+          <button class="reset-top" type="button" id="resetBtn">Reset</button>
+        </div>
+      </div>
+      <div class="today" id="todayText">Hari ini</div>
+    </section>
+
+    <section class="summary">
+      <div class="stat"><span>Model</span><strong id="totalCount">0</strong></div>
+      <div class="stat"><span>Belum</span><strong id="pendingCount">0</strong></div>
+      <div class="stat"><span>Total Pcs</span><strong id="totalPcsCount">0</strong></div>
+      <div class="stat"><span>Total Modal</span><strong id="totalModalCount">Rp0</strong></div>
+    </section>
+
+    <section class="page page-home active" id="pageHome">
+      <section class="card form-card">
+        <div class="card-header">
+          <h2 id="formTitle">Tambah Barang Hijab</h2>
+          <p>Input dibuat simpel: isi model, supplier, harga kodian, warna, dan jumlah pcs.</p>
+        </div>
+
+        <form id="itemForm">
+          <input type="hidden" id="editId" />
+          <datalist id="itemNameOptions"></datalist>
+          <datalist id="supplierOptions"></datalist>
+          <datalist id="colorOptions"></datalist>
+
+          <div>
+            <label for="name">Nama Barang / Model</label>
+            <input id="name" type="text" placeholder="" autocomplete="off" required />
+            <div class="saved-panel smart-suggest" id="itemNameSavedPanel"></div>
+          </div>
+
+          <div>
+            <label for="supplierName">Nama Supplier</label>
+            <input id="supplierName" type="text" placeholder="" autocomplete="off" />
+            <div class="saved-panel smart-suggest" id="supplierSavedPanel"></div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="kodiPrice">Harga Kodian</label>
+              <input id="kodiPrice" type="text" inputmode="numeric" placeholder="" />
+            </div>
+            <div>
+              <label for="pcsPricePreview">Harga per Pcs</label>
+              <input id="pcsPricePreview" type="text" value="Rp0" readonly />
+            </div>
+          </div>
+          
+
+          <div class="variant-box">
+            <div class="variant-head">
+              <strong>Warna dan Jumlah Pcs</strong>
+            </div>
+
+            <div class="variant-tools">
+              <button class="small-btn add-color-btn" type="button" id="addVariantBtn">+ Warna</button>
+            </div>
+
+            <div class="saved-panel" id="colorSavedPanel"></div>
+            <div class="variant-list" id="variantList"></div>
+            
+          </div>
+
+          <div>
+            <label for="priority">Kebutuhan Stok</label>
+            <select id="priority">
+              <option value="Tinggi">Stok Habis</option>
+              <option value="Sedang" selected>Stok Menipis</option>
+              <option value="Rendah">Tambahan</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="note">Catatan</label>
+            <textarea id="note" placeholder=""></textarea>
+          </div>
+
+          <div class="btn-row single-action">
+            <button class="btn btn-primary" type="submit" id="submitBtn">+ Tambah ke List</button>
+          </div>
+        </form>
+
+        <div class="home-actions">
+          <button class="btn btn-green" type="button" id="goListBtn">Lihat List Belanja</button>
+          <button class="btn btn-danger" type="button" id="clearDataKeepMasterBtn">Hapus Data</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="page page-list" id="pageList">
+      <section class="card">
+        <div class="card-header">
+          <h2>List Belanja per Supplier</h2>
+          <p>Klik nama supplier untuk masuk ke halaman detail belanja supplier tersebut.</p>
+        </div>
+
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="Cari supplier, hijab, warna..." />
+          <select id="statusFilter">
+            <option value="all">Semua</option>
+            <option value="pending">Belum dibeli</option>
+            <option value="done">Sudah dibeli</option>
+          </select>
+        </div>
+<div class="list" id="supplierList"></div>
+      </section>
+    </section>
+
+
+    <section class="page page-pending" id="pagePending">
+      <section class="card">
+        <div class="detail-top">
+          <div class="detail-title">
+            <h2>Barang Belum Selesai</h2>
+          </div>
+          <div class="detail-summary" id="pendingSummary"></div>
+        </div>
+        <div class="list" id="pendingItemList"></div>
+      </section>
+    </section>
+
+
+
+    <section class="page page-budget" id="pageBudget">
+      <section class="card">
+        <div class="card-header">
+          <h2>Kalkulator Budget</h2>
+          <p>Filter daftar belanja yang paling mendekati budget.</p>
+        </div>
+        <div class="budget-box">
+          <div>
+            <label for="budgetInput">Budget Belanja</label>
+            <input id="budgetInput" type="text" inputmode="numeric" placeholder="Contoh: 3000000" autocomplete="off" />
+          </div>
+          <div class="budget-actions">
+            <button class="btn btn-primary" type="button" id="calculateBudgetBtn">Hitung Budget</button>
+            <button class="btn btn-light" type="button" id="clearBudgetBtn">Reset</button>
+          </div>
+          <div class="budget-note">Hitungan memakai nominal pojok kanan card barang dari data yang belum dibeli.</div>
+        </div>
+        <div class="list budget-list" id="budgetResultList"></div>
+      </section>
+    </section>
+
+    <section class="page page-detail" id="pageDetail">
+      <section class="card">
+        <div class="detail-top">
+          
+          <div class="detail-title">
+            <h2 id="detailSupplierName">Supplier</h2>
+            
+          </div>
+          <div class="detail-summary" id="detailSummary"></div>
+        </div>
+        <div class="list" id="detailItemList"></div>
+      </section>
+    </section>
+
+    
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" type="button" data-page="home">Home</button>
+    <button class="nav-btn" type="button" data-page="list">Supplier</button>
+    <button class="nav-btn" type="button" data-page="pending">Belum</button>
+    <button class="nav-btn" type="button" data-page="budget">Budget</button>
+  </nav>
+
+  <div class="toast" id="toast">Tersimpan</div>
+
+
+  <div class="pin-modal" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+    <div class="pin-dialog">
+      <div class="pin-icon" aria-hidden="true">🔐</div>
+      <h3 id="pinModalTitle">Masukkan PIN</h3>
+      <p id="pinActionText">Konfirmasi aksi ini pakai PIN.</p>
+      <input
+        class="pin-input"
+        id="pinInput"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="12"
+        autocomplete="off"
+        aria-label="PIN aplikasi"
+      />
+      <div class="pin-error" id="pinError" aria-live="polite"></div>
+      <div class="pin-actions">
+        <button class="btn btn-light" type="button" id="pinCancelBtn">Batal</button>
+        <button class="btn btn-primary" type="button" id="pinConfirmBtn">Lanjut</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="print-modal" id="printModal" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
+    <div class="print-dialog">
+      <div class="print-head">
+        <h3 id="printModalTitle">Preview List Belanja</h3>
+        <p id="printerStatus">Printer Android: RPP02N-FF57</p>
+      </div>
+      <pre class="print-preview" id="printPreviewText"></pre>
+      <div class="print-footer">
+        <button class="btn btn-light" type="button" id="closePrintBtn">Tutup</button>
+        <button class="btn btn-green" type="button" id="selectPrinterBtn">Cek Printer</button>
+        <button class="btn btn-primary" type="button" id="sendPrintBtn">Cetak</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DB_NAME = "belanja_toko_hijab_android_db";
+    const DB_VERSION = 1;
+    const STORE_NAME = "items";
+    const MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
+    const DEFAULT_UNIT = "pcs";
+    const UNSET_SUPPLIER = "Supplier belum diisi";
+    const APP_PIN = "123";
+    const PRINTER_NAME = "RPP02N-FF57";
+
+    const pageHome = document.getElementById("pageHome");
+    const pageList = document.getElementById("pageList");
+    const pagePending = document.getElementById("pagePending");
+    const pageBudget = document.getElementById("pageBudget");
+    const pageDetail = document.getElementById("pageDetail");
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const goListBtn = document.getElementById("goListBtn");
+    const clearDataKeepMasterBtn = document.getElementById("clearDataKeepMasterBtn");
+    const backToListBtn = document.getElementById("backToListBtn");
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const form = document.getElementById("itemForm");
+    const editId = document.getElementById("editId");
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const nameInput = document.getElementById("name");
+    const supplierInput = document.getElementById("supplierName");
+    const kodiPriceInput = document.getElementById("kodiPrice");
+    const pcsPricePreview = document.getElementById("pcsPricePreview");
+    const variantList = document.getElementById("variantList");
+    const addVariantBtn = document.getElementById("addVariantBtn");
+    const priorityInput = document.getElementById("priority");
+    const noteInput = document.getElementById("note");
+    const itemNameOptions = document.getElementById("itemNameOptions");
+    const supplierOptions = document.getElementById("supplierOptions");
+    const colorOptions = document.getElementById("colorOptions");
+    const itemNameSavedPanel = document.getElementById("itemNameSavedPanel");
+    const supplierSavedPanel = document.getElementById("supplierSavedPanel");
+    const colorSavedPanel = document.getElementById("colorSavedPanel");
+    const savedToggleButtons = document.querySelectorAll("[data-saved-target]");
+
+    const supplierList = document.getElementById("supplierList");
+    const pendingItemList = document.getElementById("pendingItemList");
+    const pendingSummary = document.getElementById("pendingSummary");
+    const detailItemList = document.getElementById("detailItemList");
+    const detailSupplierName = document.getElementById("detailSupplierName");
+    const detailSupplierNote = document.getElementById("detailSupplierNote");
+    const detailSummary = document.getElementById("detailSummary");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const budgetInput = document.getElementById("budgetInput");
+    const calculateBudgetBtn = document.getElementById("calculateBudgetBtn");
+    const clearBudgetBtn = document.getElementById("clearBudgetBtn");
+    const budgetResultList = document.getElementById("budgetResultList");
+    const totalCount = document.getElementById("totalCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const totalPcsCount = document.getElementById("totalPcsCount");
+    const totalModalCount = document.getElementById("totalModalCount");
+    const todayText = document.getElementById("todayText");
+    const toast = document.getElementById("toast");
+    const printerBtn = document.getElementById("printerBtn");
+    const printModal = document.getElementById("printModal");
+    const printPreviewText = document.getElementById("printPreviewText");
+    const printerStatus = document.getElementById("printerStatus");
+    const closePrintBtn = document.getElementById("closePrintBtn");
+    const selectPrinterBtn = document.getElementById("selectPrinterBtn");
+    const sendPrintBtn = document.getElementById("sendPrintBtn");
+    const pinModal = document.getElementById("pinModal");
+    const pinInput = document.getElementById("pinInput");
+    const pinActionText = document.getElementById("pinActionText");
+    const pinError = document.getElementById("pinError");
+    const pinCancelBtn = document.getElementById("pinCancelBtn");
+    const pinConfirmBtn = document.getElementById("pinConfirmBtn");
+
+    let db = null;
+    let items = [];
+    let selectedSupplier = "";
+    let activeColorInput = null;
+    let currentPageName = "home";
+    let selectedVariantKeys = new Set();
+    let bluetoothDevice = null;
+    let printerCharacteristic = null;
+
+    todayText.textContent = new Date().toLocaleDateString("id-ID", {
+      weekday: "long", day: "2-digit", month: "long", year: "numeric"
+    });
+
+    function showPage(pageName, pushHistory = true) {
+      pageHome.classList.toggle("active", pageName === "home");
+      pageList.classList.toggle("active", pageName === "list");
+      pagePending.classList.toggle("active", pageName === "pending");
+      if (pageBudget) pageBudget.classList.toggle("active", pageName === "budget");
+      pageDetail.classList.toggle("active", pageName === "detail");
+      document.body.classList.toggle("detail-supplier-clean", pageName === "detail");
+      const topSummary = document.querySelector(".summary");
+      if (topSummary) topSummary.hidden = pageName === "detail";
+      currentPageName = pageName;
+
+      navButtons.forEach(button => {
+        const activeName = pageName === "detail" ? "list" : pageName;
+        button.classList.toggle("active", button.dataset.page === activeName);
+      });
+
+      if (pushHistory && window.history && history.pushState) {
+        const state = { page: pageName, supplier: selectedSupplier || "" };
+        const hash = pageName === "detail"
+          ? `#detail-${encodeURIComponent(selectedSupplier || "supplier")}`
+          : `#${pageName}`;
+        if (location.hash !== hash) {
+          history.pushState(state, "", hash);
+        } else {
+          history.replaceState(state, "", hash);
+        }
+      }
+
+      if (pageName === "budget") renderBudgetPage(false);
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    navButtons.forEach(button => button.addEventListener("click", () => showPage(button.dataset.page)));
+    goListBtn.addEventListener("click", () => showPage("list"));
+    if (backToListBtn) backToListBtn.addEventListener("click", () => showPage("list"));
+
+    if (window.history && history.replaceState) {
+      history.replaceState({ page: "home", supplier: "" }, "", "#home");
+    }
+
+    window.addEventListener("popstate", event => {
+      const state = event.state || { page: "home", supplier: "" };
+      if (state.page === "detail" && state.supplier) {
+        selectedSupplier = state.supplier;
+        renderSupplierDetail(selectedSupplier);
+      }
+      showPage(state.page || "home", false);
+    });
+
+    document.addEventListener("touchstart", event => {
+      if (!pageDetail.classList.contains("active")) return;
+      const touch = event.changedTouches[0];
+      touchStartX = touch.screenX;
+      touchStartY = touch.screenY;
+    }, { passive: true });
+
+    document.addEventListener("touchend", event => {
+      if (!pageDetail.classList.contains("active")) return;
+      const touch = event.changedTouches[0];
+      touchEndX = touch.screenX;
+      touchEndY = touch.screenY;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = Math.abs(touchEndY - touchStartY);
+      const isHorizontalSwipe = Math.abs(diffX) > 70 && diffY < 70;
+
+      if (isHorizontalSwipe) {
+        showPage("list");
+      }
+    }, { passive: true });
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("IndexedDB tidak didukung."));
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = event => {
+          const database = event.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
+            store.createIndex("createdAt", "createdAt", { unique: false });
+            store.createIndex("done", "done", { unique: false });
+          }
+        };
+        request.onsuccess = event => resolve(event.target.result);
+        request.onerror = event => reject(event.target.error);
+      });
+    }
+
+    function runStore(mode, callback) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, mode);
+        const store = tx.objectStore(STORE_NAME);
+        let result;
+        try { result = callback(store); }
+        catch (error) { reject(error); return; }
+        tx.oncomplete = () => resolve(result);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    function getAllItems() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function saveItem(item) { return runStore("readwrite", store => store.put(item)); }
+    function removeItemById(id) { return runStore("readwrite", store => store.delete(id)); }
+    function clearAllItems() { return runStore("readwrite", store => store.clear()); }
+    function clearDoneVariants() {
+      return runStore("readwrite", store => {
+        items.forEach(rawItem => {
+          const item = normalizeItem(rawItem);
+          const hasDone = item.variants.some(variant => variant.done);
+          if (!hasDone) return;
+
+          const remainingVariants = item.variants.filter(variant => !variant.done);
+          if (!remainingVariants.length) {
+            store.delete(item.id);
+          } else {
+            store.put({
+              ...item,
+              variants: remainingVariants,
+              done: false,
+              updatedAt: new Date().toISOString()
+            });
+          }
+        });
+      });
+    }
+
+    function makeId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+
+    function safeText(value) {
+      return String(value || "").replace(/[<>]/g, "").trim();
+    }
+
+    function cleanSavedList(values) {
+      return [...new Set((Array.isArray(values) ? values : []).map(safeText).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "id-ID"));
+    }
+
+    function getStoredSavedData() {
+      try {
+        const raw = localStorage.getItem(MASTER_DATA_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        return {
+          itemNames: cleanSavedList(data.itemNames),
+          suppliers: cleanSavedList(data.suppliers),
+          colors: cleanSavedList(data.colors)
+        };
+      } catch (error) {
+        console.warn("Gagal baca data master saran", error);
+        return { itemNames: [], suppliers: [], colors: [] };
+      }
+    }
+
+    function saveStoredSavedData(data) {
+      const oldData = getStoredSavedData();
+      const nextData = {
+        itemNames: cleanSavedList([...(oldData.itemNames || []), ...((data && data.itemNames) || [])]),
+        suppliers: cleanSavedList([...(oldData.suppliers || []), ...((data && data.suppliers) || [])]),
+        colors: cleanSavedList([...(oldData.colors || []), ...((data && data.colors) || [])])
+      };
+
+      try {
+        localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(nextData));
+      } catch (error) {
+        console.warn("Gagal simpan data master saran", error);
+      }
+
+      return nextData;
+    }
+
+    function rememberSavedFromItem(rawItem) {
+      const item = normalizeItem(rawItem);
+      saveStoredSavedData({
+        itemNames: item.name ? [item.name] : [],
+        suppliers: item.supplierName ? [item.supplierName] : [],
+        colors: item.variants.map(variant => variant.colorName).filter(Boolean)
+      });
+    }
+
+    function formatRupiah(value) {
+      const number = Number(value) || 0;
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency", currency: "IDR", maximumFractionDigits: 0
+      }).format(number);
+    }
+
+    function parseRupiah(value) {
+      return Number(String(value || "").replace(/[^0-9]/g, "")) || 0;
+    }
+
+    function formatKodiPriceInput() {
+      const value = parseRupiah(kodiPriceInput.value);
+      kodiPriceInput.value = value ? formatRupiah(value) : "";
+      updatePricePreview();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    let pinResolve = null;
+
+    function closePinModal(result) {
+      if (pinModal) pinModal.classList.remove("show");
+      document.body.classList.remove("pin-lock");
+      if (pinInput) pinInput.value = "";
+      if (pinError) pinError.textContent = "";
+
+      const resolver = pinResolve;
+      pinResolve = null;
+      if (resolver) resolver(Boolean(result));
+    }
+
+    function confirmPinModal() {
+      const pin = String(pinInput ? pinInput.value : "").replace(/\D/g, "");
+      if (pin !== APP_PIN) {
+        if (pinError) pinError.textContent = "PIN salah bro.";
+        if (pinInput) {
+          pinInput.value = "";
+          pinInput.focus({ preventScroll: true });
+        }
+        return;
+      }
+      closePinModal(true);
+    }
+
+    function focusPinInput() {
+      if (!pinInput) return;
+      pinInput.focus({ preventScroll: true });
+      if (typeof pinInput.click === "function") pinInput.click();
+    }
+
+    function requirePin(actionText) {
+      if (!pinModal || !pinInput || !pinConfirmBtn || !pinCancelBtn) {
+        const pin = prompt(`Masukkan PIN untuk ${actionText}:`);
+        if (pin === null) return Promise.resolve(false);
+        if (pin !== APP_PIN) {
+          alert("PIN salah bro.");
+          return Promise.resolve(false);
+        }
+        return Promise.resolve(true);
+      }
+
+      return new Promise(resolve => {
+        pinResolve = resolve;
+        if (pinActionText) pinActionText.textContent = `Konfirmasi untuk ${actionText}. Keyboard angka akan otomatis muncul.`;
+        if (pinError) pinError.textContent = "";
+        pinInput.value = "";
+        pinModal.classList.add("show");
+        document.body.classList.add("pin-lock");
+        focusPinInput();
+        setTimeout(focusPinInput, 80);
+      });
+    }
+
+    if (pinInput) {
+      pinInput.addEventListener("input", () => {
+        pinInput.value = pinInput.value.replace(/\D/g, "");
+        if (pinError) pinError.textContent = "";
+      });
+
+      pinInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          confirmPinModal();
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closePinModal(false);
+        }
+      });
+    }
+
+    if (pinConfirmBtn) pinConfirmBtn.addEventListener("click", confirmPinModal);
+    if (pinCancelBtn) pinCancelBtn.addEventListener("click", () => closePinModal(false));
+    if (pinModal) pinModal.addEventListener("click", event => {
+      if (event.target === pinModal) closePinModal(false);
+    });
+
+    function updatePrinterStatus(message) {
+      if (printerStatus) printerStatus.textContent = message;
+    }
+
+
+    function priorityClass(priority) {
+      if (priority === "Tinggi") return "high";
+      if (priority === "Rendah") return "low";
+      return "medium";
+    }
+
+    function priorityLabel(priority) {
+      if (priority === "Tinggi") return "Stok Habis";
+      if (priority === "Rendah") return "Tambahan";
+      return "Stok Menipis";
+    }
+
+    function normalizeItem(item) {
+      const oldItemDone = Boolean(item.done);
+      const variants = Array.isArray(item.variants) && item.variants.length
+        ? item.variants.map(v => ({
+            colorName: safeText(v.colorName),
+            qty: Math.max(1, Number(v.qty) || 1),
+            done: Boolean(v.done) || oldItemDone
+          }))
+        : [{
+            colorName: safeText(item.colorName),
+            qty: Math.max(1, Number(item.qty) || 1),
+            done: oldItemDone
+          }];
+
+      return {
+        ...item,
+        id: item.id || makeId(),
+        name: safeText(item.name),
+        supplierName: safeText(item.supplierName),
+        kodiPrice: Math.max(0, Number(item.kodiPrice) || 0),
+        variants,
+        unit: DEFAULT_UNIT,
+        priority: item.priority || "Sedang",
+        note: safeText(item.note),
+        done: variants.length ? variants.every(variant => variant.done) : oldItemDone,
+        createdAt: item.createdAt || new Date().toISOString()
+      };
+    }
+
+    function getSupplierKey(item) { return normalizeItem(item).supplierName || UNSET_SUPPLIER; }
+    function getTotalQty(item) { return normalizeItem(item).variants.reduce((sum, variant) => sum + variant.qty, 0); }
+    function getPendingQty(item) { return normalizeItem(item).variants.filter(variant => !variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
+    function getDoneQty(item) { return normalizeItem(item).variants.filter(variant => variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
+    function hasDoneVariant(item) { return normalizeItem(item).variants.some(variant => variant.done); }
+    function hasPendingVariant(item) { return normalizeItem(item).variants.some(variant => !variant.done); }
+    function getPcsPrice(item) { const data = normalizeItem(item); return data.kodiPrice > 0 ? data.kodiPrice / 20 : 0; }
+    function getTotalNominal(item) { return getTotalQty(item) * getPcsPrice(item); }
+    function getPendingNominal(item) { return getPendingQty(item) * getPcsPrice(item); }
+
+    function updatePricePreview() {
+      pcsPricePreview.value = formatRupiah(parseRupiah(kodiPriceInput.value) / 20);
+    }
+
+    function addVariantRow(colorName = "", qty = 1) {
+      const row = document.createElement("div");
+      row.className = "variant-row";
+
+      const colorWrap = document.createElement("div");
+      const colorLabel = document.createElement("label");
+      colorLabel.textContent = "Warna / Motif";
+      const color = document.createElement("input");
+      color.className = "variant-color";
+      color.type = "text";
+      color.placeholder = "";
+      color.autocomplete = "off";
+      color.value = safeText(colorName);
+      color.addEventListener("focus", () => {
+        activeColorInput = color;
+      });
+      color.addEventListener("click", () => {
+        activeColorInput = color;
+      });
+      colorWrap.append(colorLabel, color);
+
+      const qtyWrap = document.createElement("div");
+      const qtyLabel = document.createElement("label");
+      qtyLabel.textContent = "Qty";
+      const qtyInput = document.createElement("input");
+      qtyInput.className = "variant-qty";
+      qtyInput.type = "number";
+      qtyInput.min = "1";
+      qtyInput.step = "1";
+      qtyInput.inputMode = "numeric";
+      qtyInput.value = Math.max(1, Number(qty) || 1);
+      qtyWrap.append(qtyLabel, qtyInput);
+
+      const remove = document.createElement("button");
+      remove.className = "remove-variant";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.addEventListener("click", () => {
+        const rows = variantList.querySelectorAll(".variant-row");
+        if (rows.length <= 1) {
+          color.value = "";
+          qtyInput.value = 1;
+        } else {
+          row.remove();
+        }
+      });
+
+      row.append(colorWrap, qtyWrap, remove);
+      variantList.appendChild(row);
+      return row;
+    }
+
+    function setVariantRows(variants) {
+      variantList.innerHTML = "";
+      const list = Array.isArray(variants) && variants.length ? variants : [{ colorName: "", qty: 1 }];
+      list.forEach(variant => addVariantRow(variant.colorName, variant.qty));
+    }
+
+    function getFormVariants() {
+      return [...variantList.querySelectorAll(".variant-row")].map(row => ({
+        colorName: safeText(row.querySelector(".variant-color").value),
+        qty: Math.max(1, Number(row.querySelector(".variant-qty").value) || 1)
+      }));
+    }
+
+    function makeSavedChip(text, onClick) {
+      const chip = document.createElement("button");
+      chip.className = "saved-chip";
+      chip.type = "button";
+      chip.textContent = text;
+      chip.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      });
+      return chip;
+    }
+
+    function getSavedData() {
+      const stored = getStoredSavedData();
+      const itemNames = new Set(stored.itemNames);
+      const suppliers = new Set(stored.suppliers);
+      const colors = new Set(stored.colors);
+
+      items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        if (item.name) itemNames.add(item.name);
+        if (item.supplierName) suppliers.add(item.supplierName);
+        item.variants.forEach(variant => {
+          if (variant.colorName) colors.add(variant.colorName);
+        });
+      });
+
+      return {
+        itemNames: [...itemNames].sort((a, b) => a.localeCompare(b, "id-ID")),
+        suppliers: [...suppliers].sort((a, b) => a.localeCompare(b, "id-ID")),
+        colors: [...colors].sort((a, b) => a.localeCompare(b, "id-ID"))
+      };
+    }
+
+    function prefixFilter(values, keyword) {
+      const clean = safeText(keyword).toLowerCase();
+      if (!clean) return values;
+      return values.filter(value => value.toLowerCase().startsWith(clean));
+    }
+
+    function fillSavedPanel(panel, values, onClick, emptyText) {
+      if (!panel) return;
+      panel.innerHTML = "";
+      const limitedValues = values.slice(0, 8);
+      if (!limitedValues.length) {
+        const empty = document.createElement("span");
+        empty.className = "saved-empty";
+        empty.textContent = emptyText;
+        panel.appendChild(empty);
+        return;
+      }
+      limitedValues.forEach(value => panel.appendChild(makeSavedChip(value, () => onClick(value))));
+    }
+
+    function renderSavedPanels() {
+      const saved = getSavedData();
+
+      fillSavedPanel(
+        itemNameSavedPanel,
+        prefixFilter(saved.itemNames, nameInput.value),
+        value => {
+          nameInput.value = value;
+          if (itemNameSavedPanel) itemNameSavedPanel.classList.remove("show");
+        },
+        "Belum ada nama tersimpan."
+      );
+
+      fillSavedPanel(
+        supplierSavedPanel,
+        prefixFilter(saved.suppliers, supplierInput.value),
+        value => {
+          supplierInput.value = value;
+          if (supplierSavedPanel) supplierSavedPanel.classList.remove("show");
+        },
+        "Belum ada supplier tersimpan."
+      );
+
+      const activeValue = activeColorInput ? activeColorInput.value : "";
+      fillSavedPanel(
+        colorSavedPanel,
+        prefixFilter(saved.colors, activeValue),
+        value => {
+          const target = activeColorInput || variantList.querySelector(".variant-color");
+          if (target) target.value = value;
+          colorSavedPanel.classList.remove("show");
+        },
+        "Belum ada warna tersimpan."
+      );
+    }
+
+    function updateSuggestions() {
+      const saved = getSavedData();
+
+      itemNameOptions.innerHTML = "";
+      saved.itemNames.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        itemNameOptions.appendChild(option);
+      });
+
+      supplierOptions.innerHTML = "";
+      saved.suppliers.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        supplierOptions.appendChild(option);
+      });
+
+      colorOptions.innerHTML = "";
+      saved.colors.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        colorOptions.appendChild(option);
+      });
+
+      renderSavedPanels();
+    }
+
+    document.addEventListener("click", event => {
+      const toggle = event.target.closest("[data-saved-target]");
+      if (!toggle) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      const target = document.getElementById(toggle.dataset.savedTarget);
+      if (!target) return;
+
+      renderSavedPanels();
+      document.querySelectorAll(".saved-panel").forEach(panel => {
+        if (panel !== target) panel.classList.remove("show");
+      });
+      target.classList.toggle("show");
+    });
+
+    document.addEventListener("click", event => {
+      const isSuggestClick = event.target.closest(".saved-panel, [data-saved-target], #name, #supplierName, .variant-color");
+      if (isSuggestClick) return;
+      document.querySelectorAll(".saved-panel").forEach(panel => panel.classList.remove("show"));
+    });
+
+    nameInput.addEventListener("focus", () => {
+      renderSavedPanels();
+      if (nameInput.value.trim() && itemNameSavedPanel) itemNameSavedPanel.classList.add("show");
+    });
+
+    supplierInput.addEventListener("focus", () => {
+      renderSavedPanels();
+      if (supplierInput.value.trim() && supplierSavedPanel) supplierSavedPanel.classList.add("show");
+    });
+
+    nameInput.addEventListener("input", () => {
+      renderSavedPanels();
+      if (nameInput.value.trim() && itemNameSavedPanel) itemNameSavedPanel.classList.add("show");
+    });
+
+    supplierInput.addEventListener("input", () => {
+      renderSavedPanels();
+      if (supplierInput.value.trim() && supplierSavedPanel) supplierSavedPanel.classList.add("show");
+    });
+
+    variantList.addEventListener("input", event => {
+      if (!event.target.classList.contains("variant-color")) return;
+      activeColorInput = event.target;
+      renderSavedPanels();
+      if (event.target.value.trim()) colorSavedPanel.classList.add("show");
+    });
+
+    addVariantBtn.addEventListener("click", () => {
+      const row = addVariantRow();
+      const colorInput = row ? row.querySelector(".variant-color") : null;
+      if (colorInput) {
+        activeColorInput = colorInput;
+        colorInput.focus({ preventScroll: true });
+      }
+      setTimeout(() => {
+        if (row && row.scrollIntoView) {
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 180);
+    });
+    kodiPriceInput.addEventListener("input", formatKodiPriceInput);
+    kodiPriceInput.addEventListener("blur", formatKodiPriceInput);
+
+    function resetForm() {
+      editId.value = "";
+      form.reset();
+      priorityInput.value = "Sedang";
+      kodiPriceInput.value = "";
+      updatePricePreview();
+      setVariantRows([{ colorName: "", qty: 1 }]);
+      formTitle.textContent = "Tambah Barang Hijab";
+      submitBtn.textContent = "+ Tambah ke List";
+      nameInput.focus();
+    }
+
+    function sortItems(data) {
+      const rank = { Tinggi: 1, Sedang: 2, Rendah: 3 };
+      return [...data].sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        if (rank[a.priority] !== rank[b.priority]) return rank[a.priority] - rank[b.priority];
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      });
+    }
+
+    function getFilteredItems() {
+      const keyword = searchInput.value.toLowerCase().trim();
+      const status = statusFilter.value;
+      return sortItems(items).filter(rawItem => {
+        const item = normalizeItem(rawItem);
+        const colorText = item.variants.map(variant => variant.colorName).join(" ");
+        const qtyText = item.variants.map(variant => variant.qty).join(" ");
+        const matchKeyword = [item.name, colorText, qtyText, item.supplierName, item.note, item.unit, item.kodiPrice]
+          .join(" ").toLowerCase().includes(keyword);
+        const matchStatus = status === "all" || (status === "done" && hasDoneVariant(item)) || (status === "pending" && hasPendingVariant(item));
+        return matchKeyword && matchStatus;
+      });
+    }
+
+    function renderSummary() {
+      const pendingItems = items.filter(item => hasPendingVariant(item));
+      totalCount.textContent = items.length;
+      pendingCount.textContent = pendingItems.length;
+      totalPcsCount.textContent = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      totalModalCount.textContent = formatRupiah(pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0));
+    }
+
+    function createBadge(text, className) {
+      const span = document.createElement("span");
+      span.className = `badge ${className}`;
+      span.textContent = text;
+      return span;
+    }
+
+
+    function getVariantSelectionKey(item, variantIndex) {
+      const data = normalizeItem(item);
+      return `${data.id}::${variantIndex}`;
+    }
+
+    function getVisibleVariantKeys(itemList, pendingOnly = false) {
+      const keys = [];
+      itemList.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => {
+          if (pendingOnly && variant.done) return;
+          keys.push(getVariantSelectionKey(item, variantIndex));
+        });
+      });
+      return keys;
+    }
+
+    function getSelectedVisibleKeys(itemList, pendingOnly = false) {
+      return getVisibleVariantKeys(itemList, pendingOnly).filter(key => selectedVariantKeys.has(key));
+    }
+
+    function pruneSelectedVariantKeys() {
+      const validKeys = new Set();
+      items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => validKeys.add(getVariantSelectionKey(item, variantIndex)));
+      });
+      selectedVariantKeys.forEach(key => {
+        if (!validKeys.has(key)) selectedVariantKeys.delete(key);
+      });
+    }
+
+    function toggleVariantSelection(item, variantIndex) {
+      const key = getVariantSelectionKey(item, variantIndex);
+      if (selectedVariantKeys.has(key)) {
+        selectedVariantKeys.delete(key);
+      } else {
+        selectedVariantKeys.add(key);
+      }
+      renderList();
+    }
+
+    function createBulkActions(itemList, options = {}) {
+      const pendingOnly = Boolean(options.pendingOnly);
+      const visibleKeys = getVisibleVariantKeys(itemList, pendingOnly);
+      const selectedKeys = visibleKeys.filter(key => selectedVariantKeys.has(key));
+      const selectedCount = selectedKeys.length;
+      const allSelected = visibleKeys.length > 0 && selectedCount === visibleKeys.length;
+
+      const bar = document.createElement("div");
+      bar.className = "bulk-actions";
+
+      const count = document.createElement("div");
+      count.className = "bulk-count";
+      const title = document.createElement("span");
+      title.textContent = `Dipilih: ${selectedCount} data`;
+      const hint = document.createElement("small");
+      hint.textContent = "Pilih warna dulu, lalu aksi massal.";
+      count.append(title, hint);
+
+      const selectAllBtn = document.createElement("button");
+      selectAllBtn.className = "icon-btn";
+      selectAllBtn.type = "button";
+      selectAllBtn.textContent = allSelected ? "Batal Semua" : "Pilih Semua";
+      selectAllBtn.disabled = !visibleKeys.length;
+      selectAllBtn.addEventListener("click", () => {
+        if (allSelected) {
+          visibleKeys.forEach(key => selectedVariantKeys.delete(key));
+        } else {
+          visibleKeys.forEach(key => selectedVariantKeys.add(key));
+        }
+        renderList();
+      });
+
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "icon-btn";
+      clearBtn.type = "button";
+      clearBtn.textContent = "Reset Pilih";
+      clearBtn.disabled = !selectedCount;
+      clearBtn.addEventListener("click", () => {
+        visibleKeys.forEach(key => selectedVariantKeys.delete(key));
+        renderList();
+      });
+
+      const doneBtn = document.createElement("button");
+      doneBtn.className = "icon-btn";
+      doneBtn.type = "button";
+      doneBtn.textContent = "Ceklis Dipilih";
+      doneBtn.disabled = !selectedCount;
+      doneBtn.addEventListener("click", () => markSelectedVariantsDone(itemList, pendingOnly));
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "icon-btn danger";
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "Hapus Dipilih";
+      deleteBtn.disabled = !selectedCount;
+      deleteBtn.addEventListener("click", () => deleteSelectedVariants(itemList, pendingOnly));
+
+      bar.append(count, selectAllBtn, clearBtn, doneBtn, deleteBtn);
+      return bar;
+    }
+
+    async function markSelectedVariantsDone(itemList, pendingOnly = false) {
+      const selectedKeys = new Set(getSelectedVisibleKeys(itemList, pendingOnly));
+      if (!selectedKeys.size) return showToast("Pilih data dulu bro");
+
+      try {
+        let changedCount = 0;
+        const saves = [];
+        itemList.forEach(rawItem => {
+          const data = normalizeItem(rawItem);
+          let changed = false;
+          data.variants = data.variants.map((variant, variantIndex) => {
+            const key = getVariantSelectionKey(data, variantIndex);
+            if (!selectedKeys.has(key)) return variant;
+            if (variant.done) return variant;
+            changed = true;
+            changedCount += 1;
+            return { ...variant, done: true };
+          });
+          if (!changed) return;
+          data.done = data.variants.every(variant => variant.done);
+          data.updatedAt = new Date().toISOString();
+          saves.push(saveItem(data));
+        });
+
+        await Promise.all(saves);
+        selectedKeys.forEach(key => selectedVariantKeys.delete(key));
+        await refreshItems();
+        showToast(changedCount ? `${changedCount} data diceklis` : "Data dipilih sudah terceklis");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal ceklis massal bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function deleteSelectedVariants(itemList, pendingOnly = false) {
+      const selectedKeys = new Set(getSelectedVisibleKeys(itemList, pendingOnly));
+      if (!selectedKeys.size) return showToast("Pilih data dulu bro");
+      if (!(await requirePin("hapus massal"))) return;
+
+      const ok = confirm(`Hapus ${selectedKeys.size} data yang dipilih? Nama barang, supplier, dan warna tetap disimpan untuk saran input.`);
+      if (!ok) return;
+
+      try {
+        saveStoredSavedData(getSavedData());
+        const jobs = [];
+        let deletedCount = 0;
+
+        itemList.forEach(rawItem => {
+          const data = normalizeItem(rawItem);
+          const remainingVariants = [];
+
+          data.variants.forEach((variant, variantIndex) => {
+            const key = getVariantSelectionKey(data, variantIndex);
+            if (selectedKeys.has(key)) {
+              deletedCount += 1;
+              return;
+            }
+            remainingVariants.push(variant);
+          });
+
+          if (remainingVariants.length === data.variants.length) return;
+
+          if (!remainingVariants.length) {
+            jobs.push(removeItemById(data.id));
+          } else {
+            jobs.push(saveItem({
+              ...data,
+              variants: remainingVariants,
+              done: remainingVariants.every(variant => variant.done),
+              updatedAt: new Date().toISOString()
+            }));
+          }
+        });
+
+        await Promise.all(jobs);
+        selectedKeys.forEach(key => selectedVariantKeys.delete(key));
+        await refreshItems();
+        showToast(`${deletedCount} data dihapus`);
+      } catch (error) {
+        console.error(error);
+        alert("Gagal hapus massal bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function deleteItem(item) {
+      if (!(await requirePin("hapus barang"))) return;
+      const ok = confirm(`Hapus "${item.name}" dari list belanja?`);
+      if (!ok) return;
+      try {
+        await removeItemById(item.id);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast("Barang dihapus");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menghapus barang bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function toggleVariantDone(item, variantIndex) {
+      const data = normalizeItem(item);
+      data.variants = data.variants.map((variant, index) => {
+        if (index !== variantIndex) return variant;
+        return { ...variant, done: !variant.done };
+      });
+      data.done = data.variants.every(variant => variant.done);
+      data.updatedAt = new Date().toISOString();
+
+      try {
+        await saveItem(data);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast(data.variants[variantIndex].done ? "Warna ditandai sudah dibeli" : "Warna dikembalikan belum dibeli");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal mengubah status warna bro.");
+      }
+    }
+
+    async function toggleDone(item) {
+      const data = normalizeItem(item);
+      const nextDone = !data.done;
+      data.variants = data.variants.map(variant => ({ ...variant, done: nextDone }));
+      data.done = nextDone;
+      data.updatedAt = new Date().toISOString();
+
+      try {
+        await saveItem(data);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast(nextDone ? "Semua warna ditandai sudah dibeli" : "Semua warna dikembalikan belum dibeli");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal mengubah status bro.");
+      }
+    }
+
+    function editItem(item) {
+      const data = normalizeItem(item);
+      editId.value = data.id;
+      nameInput.value = data.name;
+      supplierInput.value = data.supplierName || "";
+      kodiPriceInput.value = data.kodiPrice ? formatRupiah(data.kodiPrice) : "";
+      updatePricePreview();
+      setVariantRows(data.variants);
+      priorityInput.value = data.priority;
+      noteInput.value = data.note;
+      formTitle.textContent = "Edit Barang Hijab";
+      submitBtn.textContent = "Simpan Perubahan";
+      showPage("home");
+      setTimeout(() => nameInput.focus(), 350);
+    }
+
+    function createItemElement(rawItem) {
+      const item = normalizeItem(rawItem);
+      const el = document.createElement("div");
+      el.className = "item" + (item.done ? " done" : "");
+
+      const check = document.createElement("button");
+      check.className = "check";
+      check.type = "button";
+      check.textContent = item.done ? "✓" : "";
+      check.addEventListener("click", () => toggleDone(item));
+
+      const main = document.createElement("div");
+      main.className = "item-main";
+      const title = document.createElement("h3");
+      title.textContent = item.name;
+      main.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.appendChild(createBadge(`Total ${getTotalQty(item)} ${item.unit}`, "qty"));
+      meta.appendChild(createBadge(`Kodi ${formatRupiah(item.kodiPrice)}`, "qty"));
+      meta.appendChild(createBadge(`Pcs ${formatRupiah(getPcsPrice(item))}`, "qty"));
+      meta.appendChild(createBadge(`Modal ${formatRupiah(getTotalNominal(item))}`, "qty"));
+      meta.appendChild(createBadge(priorityLabel(item.priority), priorityClass(item.priority)));
+      main.appendChild(meta);
+
+      const variantBadges = document.createElement("div");
+      variantBadges.className = "variant-badges";
+      item.variants.forEach(variant => {
+        variantBadges.appendChild(createBadge(`${variant.colorName || "Tanpa warna"}: ${variant.qty} ${item.unit}`, "color"));
+      });
+      main.appendChild(variantBadges);
+
+      if (item.note) {
+        const note = document.createElement("p");
+        note.className = "note";
+        note.textContent = item.note;
+        main.appendChild(note);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "item-actions";
+      const edit = document.createElement("button");
+      edit.className = "icon-btn";
+      edit.type = "button";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", () => editItem(item));
+
+      const del = document.createElement("button");
+      del.className = "icon-btn danger";
+      del.type = "button";
+      del.textContent = "Hapus";
+      del.addEventListener("click", () => deleteItem(item));
+
+      actions.append(edit, del);
+      el.append(check, main, actions);
+      return el;
+    }
+
+    function getSupplierGroups() {
+      const groups = new Map();
+      getFilteredItems().forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const supplier = getSupplierKey(item);
+        if (!groups.has(supplier)) groups.set(supplier, []);
+        groups.get(supplier).push(item);
+      });
+      return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], "id-ID"));
+    }
+
+    function renderSupplierList() {
+      updateSuggestions();
+      renderSummary();
+      supplierList.innerHTML = "";
+      const groups = getSupplierGroups();
+
+      if (!groups.length) {
+        supplierList.innerHTML = `
+          <div class="empty">
+            Belum ada supplier di list.<br />
+            Tambahkan stok hijab dari halaman Home dulu bro.
+          </div>
+        `;
+        return;
+      }
+
+      groups.forEach(([supplierName, supplierItems]) => {
+        const pendingItems = supplierItems.filter(item => !item.done);
+        const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+        const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+        const card = document.createElement("button");
+        card.className = "supplier-card";
+        card.type = "button";
+        card.style.pointerEvents = "auto";
+
+        const content = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = supplierName;
+        const info = document.createElement("span");
+        info.textContent = `${supplierItems.length} model • ${pendingItems.length} belum dibeli • ${totalPcs} pcs • ${formatRupiah(totalModal)}`;
+        content.append(name, info);
+
+        const arrow = document.createElement("div");
+        arrow.className = "supplier-arrow";
+        arrow.textContent = "›";
+
+        card.append(content, arrow);
+        card.addEventListener("click", () => openSupplierDetail(supplierName));
+        supplierList.appendChild(card);
+      });
+    }
+
+    function getItemsForSupplier(supplierName) {
+      return sortItems(items).filter(item => getSupplierKey(item) === supplierName);
+    }
+
+    function openSupplierDetail(supplierName) {
+      selectedSupplier = supplierName;
+      renderSupplierDetail(supplierName);
+      showPage("detail");
+    }
+
+    function renderSupplierDetail(supplierName) {
+      const supplierItems = getItemsForSupplier(supplierName);
+      const pendingItems = supplierItems.filter(item => hasPendingVariant(item));
+      const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+      detailSupplierName.textContent = supplierName || UNSET_SUPPLIER;
+      if (detailSupplierNote) detailSupplierNote.textContent = "";
+      if (detailSummary) detailSummary.innerHTML = "";
+
+      detailItemList.innerHTML = "";
+      if (!supplierItems.length) {
+        detailItemList.innerHTML = `<div class="empty">Barang untuk supplier ini sudah tidak ada bro.</div>`;
+        return;
+      }
+
+      detailItemList.appendChild(createBulkActions(supplierItems, { pendingOnly: false }));
+
+      const simpleList = document.createElement("div");
+      simpleList.className = "simple-detail";
+
+      supplierItems.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const row = document.createElement("div");
+        row.className = "simple-row";
+
+        const head = document.createElement("div");
+        head.className = "simple-product-head with-total";
+        const headText = document.createElement("div");
+        const headLabel = document.createElement("span");
+        headLabel.textContent = "Barang";
+        const headValue = document.createElement("strong");
+        headValue.textContent = item.name;
+        headText.append(headLabel, headValue);
+        const headTotal = document.createElement("div");
+        headTotal.className = "product-total-pill";
+        headTotal.textContent = formatRupiah(getTotalNominal(item));
+        head.append(headText, headTotal);
+        row.appendChild(head);
+
+        item.variants.forEach((variant, variantIndex) => {
+          const variantRow = document.createElement("div");
+          const selectionKey = getVariantSelectionKey(item, variantIndex);
+          const isSelected = selectedVariantKeys.has(selectionKey);
+          variantRow.className = "simple-variant-row" + (variant.done ? " variant-done" : "") + (isSelected ? " variant-selected" : "");
+
+          const selectWrap = document.createElement("div");
+          selectWrap.className = "select-check-wrap";
+          const selectBtn = document.createElement("button");
+          selectBtn.className = "select-check" + (isSelected ? " selected" : "");
+          selectBtn.type = "button";
+          selectBtn.textContent = isSelected ? "✓" : "";
+          selectBtn.title = isSelected ? "Batalkan pilihan" : "Pilih data";
+          selectBtn.addEventListener("click", () => toggleVariantSelection(item, variantIndex));
+          selectWrap.appendChild(selectBtn);
+
+          const checkWrap = document.createElement("div");
+          checkWrap.className = "variant-check-wrap";
+          const checkBtn = document.createElement("button");
+          checkBtn.className = "variant-check" + (variant.done ? " done" : "");
+          checkBtn.type = "button";
+          checkBtn.textContent = variant.done ? "✓" : "";
+          checkBtn.title = variant.done ? "Sudah dibeli" : "Belum dibeli";
+          checkBtn.addEventListener("click", () => toggleVariantDone(item, variantIndex));
+          checkWrap.appendChild(checkBtn);
+
+          const warna = document.createElement("div");
+          warna.className = "simple-cell";
+          const warnaLabel = document.createElement("span");
+          warnaLabel.textContent = "Warna";
+          const warnaValue = document.createElement("strong");
+          warnaValue.textContent = variant.colorName || "Tanpa warna";
+          warna.append(warnaLabel, warnaValue);
+
+          const jumlah = document.createElement("div");
+          jumlah.className = "simple-cell";
+          const jumlahLabel = document.createElement("span");
+          jumlahLabel.textContent = "Jumlah";
+          const jumlahValue = document.createElement("strong");
+          jumlahValue.textContent = `${variant.qty} pcs`;
+          jumlah.append(jumlahLabel, jumlahValue);
+
+          variantRow.append(selectWrap, checkWrap, warna, jumlah);
+          row.appendChild(variantRow);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "simple-actions";
+        actions.style.gridTemplateColumns = "1fr 1fr";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editItem(item));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "icon-btn danger";
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Hapus";
+        deleteBtn.addEventListener("click", () => deleteItem(item));
+
+        actions.append(editBtn, deleteBtn);
+        row.appendChild(actions);
+        simpleList.appendChild(row);
+      });
+
+      detailItemList.appendChild(simpleList);
+    }
+
+
+
+
+    function getBudgetRows() {
+      const rows = [];
+      sortItems(items).forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const pendingVariants = item.variants
+          .map((variant, variantIndex) => ({ variant, variantIndex }))
+          .filter(entry => !entry.variant.done);
+
+        if (!pendingVariants.length) return;
+
+        const pcsPrice = getPcsPrice(item);
+        const amount = Math.round(getPendingNominal(item));
+        const qty = getPendingQty(item);
+        const colors = pendingVariants
+          .map(entry => entry.variant.colorName || "Tanpa warna")
+          .join(", ");
+        const keys = pendingVariants.map(entry => getVariantSelectionKey(item, entry.variantIndex));
+
+        rows.push({
+          key: item.id,
+          keys,
+          itemId: item.id,
+          supplier: getSupplierKey(item),
+          name: item.name || "Tanpa nama",
+          color: colors || "Tanpa warna",
+          qty,
+          pcsPrice,
+          amount,
+          priority: item.priority || "Sedang"
+        });
+      });
+      return rows;
+    }
+
+    function findBestBudgetCombination(rows, budget) {
+      const pricedRows = rows.filter(row => row.amount > 0 && row.amount <= budget);
+      const skippedNoPrice = rows.filter(row => row.amount <= 0).length;
+      if (!pricedRows.length || budget <= 0) {
+        return { rows: [], total: 0, remaining: budget, skippedNoPrice, step: 1 };
+      }
+
+      const step = Math.max(100, Math.ceil((budget / 12000) / 100) * 100);
+      const capacity = Math.max(1, Math.floor(budget / step));
+      const dp = Array(capacity + 1).fill(null);
+      dp[0] = { indexes: [], actualTotal: 0, totalQty: 0 };
+
+      pricedRows.forEach((row, index) => {
+        const costUnit = Math.max(1, Math.ceil(row.amount / step));
+        if (costUnit > capacity) return;
+
+        for (let current = capacity - costUnit; current >= 0; current--) {
+          const state = dp[current];
+          if (!state) continue;
+
+          const nextUnit = current + costUnit;
+          const nextActualTotal = state.actualTotal + row.amount;
+          if (nextActualTotal > budget) continue;
+
+          const nextQty = state.totalQty + row.qty;
+          const existing = dp[nextUnit];
+          const shouldReplace = !existing
+            || nextActualTotal > existing.actualTotal
+            || (nextActualTotal === existing.actualTotal && nextQty > existing.totalQty);
+
+          if (shouldReplace) {
+            dp[nextUnit] = {
+              indexes: state.indexes.concat(index),
+              actualTotal: nextActualTotal,
+              totalQty: nextQty
+            };
+          }
+        }
+      });
+
+      let best = dp[0];
+      dp.forEach(state => {
+        if (!state) return;
+        if (state.actualTotal > best.actualTotal) best = state;
+      });
+
+      const selectedRows = best.indexes.map(index => pricedRows[index]);
+      return {
+        rows: selectedRows,
+        total: best.actualTotal,
+        remaining: Math.max(0, budget - best.actualTotal),
+        skippedNoPrice,
+        step
+      };
+    }
+
+    function createBudgetMiniStat(label, value) {
+      const box = document.createElement("div");
+      box.className = "budget-mini-stat";
+      const span = document.createElement("span");
+      span.textContent = label;
+      const strong = document.createElement("strong");
+      strong.textContent = value;
+      box.append(span, strong);
+      return box;
+    }
+
+    function selectBudgetRecommendation(rows) {
+      if (!rows.length) return showToast("Belum ada rekomendasi budget");
+      selectedVariantKeys.clear();
+      rows.forEach(row => {
+        if (Array.isArray(row.keys) && row.keys.length) {
+          row.keys.forEach(key => selectedVariantKeys.add(key));
+        } else if (row.key) {
+          selectedVariantKeys.add(row.key);
+        }
+      });
+      renderList();
+      showPage("pending");
+      showToast(`${rows.length} barang budget sudah dipilih`);
+    }
+
+    function renderBudgetPage(forceCalculate = true) {
+      if (!budgetResultList || !budgetInput) return;
+      const budget = parseRupiah(budgetInput.value);
+      budgetResultList.innerHTML = "";
+
+      if (!budget) {
+        budgetResultList.innerHTML = `<div class="empty">Masukkan budget dulu bro, contoh 3000000 untuk cari kombinasi belanja yang paling mendekati Rp3 juta.</div>`;
+        return;
+      }
+
+      if (!forceCalculate && !budgetResultList.dataset.calculated) {
+        budgetResultList.innerHTML = `<div class="empty">Klik Hitung Budget untuk mulai menyaring daftar belanja.</div>`;
+        return;
+      }
+
+      budgetResultList.dataset.calculated = "1";
+      const rows = getBudgetRows();
+      if (!rows.length) {
+        budgetResultList.innerHTML = `<div class="empty">Belum ada barang pending untuk dihitung bro.</div>`;
+        return;
+      }
+
+      const result = findBestBudgetCombination(rows, budget);
+      if (!result.rows.length) {
+        budgetResultList.innerHTML = `<div class="empty">Belum ada barang yang bisa masuk budget ini. Cek harga kodian atau naikkan budget.</div>`;
+        return;
+      }
+
+      const totalPcs = result.rows.reduce((sum, row) => sum + row.qty, 0);
+      const summary = document.createElement("div");
+      summary.className = "budget-summary";
+      summary.append(
+        createBudgetMiniStat("Budget", formatRupiah(budget)),
+        createBudgetMiniStat("Terpakai", formatRupiah(result.total)),
+        createBudgetMiniStat("Sisa", formatRupiah(result.remaining))
+      );
+      budgetResultList.appendChild(summary);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "budget-action-row";
+      const info = document.createElement("div");
+      info.className = "budget-note";
+      info.textContent = `Rekomendasi: ${result.rows.length} barang, total ${totalPcs} pcs. Patokan budget memakai nominal pojok kanan card barang. ${result.skippedNoPrice ? result.skippedNoPrice + " barang tanpa harga kodian dilewati." : ""}`;
+      const selectBtn = document.createElement("button");
+      selectBtn.className = "btn btn-green";
+      selectBtn.type = "button";
+      selectBtn.textContent = "Pilih Rekomendasi di Halaman Belum";
+      selectBtn.addEventListener("click", () => selectBudgetRecommendation(result.rows));
+      actionRow.append(info, selectBtn);
+      budgetResultList.appendChild(actionRow);
+
+      result.rows
+        .sort((a, b) => a.supplier.localeCompare(b.supplier, "id-ID") || a.name.localeCompare(b.name, "id-ID"))
+        .forEach(row => {
+          const card = document.createElement("div");
+          card.className = "budget-result-card";
+
+          const main = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = row.name;
+          const desc = document.createElement("span");
+          desc.textContent = `${row.supplier} • ${row.color} • ${row.qty} pcs • nominal card barang`;
+          main.append(title, desc);
+
+          const price = document.createElement("div");
+          price.className = "budget-price";
+          price.textContent = formatRupiah(row.amount);
+
+          card.append(main, price);
+          budgetResultList.appendChild(card);
+        });
+    }
+
+
+    function renderMiniStats(target, stats) {
+      target.innerHTML = "";
+      stats.forEach(([label, value]) => {
+        const box = document.createElement("div");
+        box.className = "detail-mini-stat";
+        const span = document.createElement("span");
+        span.textContent = label;
+        const strong = document.createElement("strong");
+        strong.textContent = value;
+        box.append(span, strong);
+        target.appendChild(box);
+      });
+    }
+
+    function renderPendingPage() {
+      if (!pendingItemList || !pendingSummary) return;
+      const pendingItems = sortItems(items).filter(item => hasPendingVariant(item));
+      const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+      renderMiniStats(pendingSummary, [
+        ["Model", pendingItems.length],
+        ["Belum Pcs", totalPcs],
+        ["Modal", formatRupiah(totalModal)]
+      ]);
+
+      pendingItemList.innerHTML = "";
+      if (!pendingItems.length) {
+        pendingItemList.innerHTML = `<div class="empty">Semua barang sudah selesai bro.</div>`;
+        return;
+      }
+
+      pendingItemList.appendChild(createBulkActions(pendingItems, { pendingOnly: true }));
+
+      const simpleList = document.createElement("div");
+      simpleList.className = "simple-detail";
+
+      pendingItems.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const row = document.createElement("div");
+        row.className = "simple-row";
+
+        const head = document.createElement("div");
+        head.className = "simple-product-head with-total";
+        const headText = document.createElement("div");
+        const headLabel = document.createElement("span");
+        headLabel.textContent = "Barang";
+        const headValue = document.createElement("strong");
+        headValue.textContent = item.name;
+        headText.append(headLabel, headValue);
+        const headTotal = document.createElement("div");
+        headTotal.className = "product-total-pill";
+        headTotal.textContent = formatRupiah(getPendingNominal(item));
+        head.append(headText, headTotal);
+        row.appendChild(head);
+
+        item.variants.forEach((variant, variantIndex) => {
+          if (variant.done) return;
+
+          const variantRow = document.createElement("div");
+          const selectionKey = getVariantSelectionKey(item, variantIndex);
+          const isSelected = selectedVariantKeys.has(selectionKey);
+          variantRow.className = "simple-variant-row" + (isSelected ? " variant-selected" : "");
+
+          const selectWrap = document.createElement("div");
+          selectWrap.className = "select-check-wrap";
+          const selectBtn = document.createElement("button");
+          selectBtn.className = "select-check" + (isSelected ? " selected" : "");
+          selectBtn.type = "button";
+          selectBtn.textContent = isSelected ? "✓" : "";
+          selectBtn.title = isSelected ? "Batalkan pilihan" : "Pilih data";
+          selectBtn.addEventListener("click", () => toggleVariantSelection(item, variantIndex));
+          selectWrap.appendChild(selectBtn);
+
+          const checkWrap = document.createElement("div");
+          checkWrap.className = "variant-check-wrap";
+          const checkBtn = document.createElement("button");
+          checkBtn.className = "variant-check";
+          checkBtn.type = "button";
+          checkBtn.textContent = "";
+          checkBtn.title = "Tandai sudah selesai";
+          checkBtn.addEventListener("click", () => toggleVariantDone(item, variantIndex));
+          checkWrap.appendChild(checkBtn);
+
+          const warna = document.createElement("div");
+          warna.className = "simple-cell";
+          const warnaLabel = document.createElement("span");
+          warnaLabel.textContent = "Warna";
+          const warnaValue = document.createElement("strong");
+          warnaValue.textContent = variant.colorName || "Tanpa warna";
+          warna.append(warnaLabel, warnaValue);
+
+          const jumlah = document.createElement("div");
+          jumlah.className = "simple-cell";
+          const jumlahLabel = document.createElement("span");
+          jumlahLabel.textContent = "Jumlah";
+          const jumlahValue = document.createElement("strong");
+          jumlahValue.textContent = `${variant.qty} pcs`;
+          jumlah.append(jumlahLabel, jumlahValue);
+
+          variantRow.append(selectWrap, checkWrap, warna, jumlah);
+          row.appendChild(variantRow);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "simple-actions";
+        actions.style.gridTemplateColumns = "1fr";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editItem(item));
+
+        actions.append(editBtn);
+        row.appendChild(actions);
+        simpleList.appendChild(row);
+      });
+
+      pendingItemList.appendChild(simpleList);
+    }
+
+
+
+    function getPendingPrintRows() {
+      const rows = [];
+      sortItems(items).forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach(variant => {
+          if (variant.done) return;
+          rows.push({
+            supplier: getSupplierKey(item),
+            name: item.name || "Tanpa nama",
+            color: variant.colorName || "Tanpa warna",
+            qty: variant.qty,
+            note: item.note || ""
+          });
+        });
+      });
+      return rows;
+    }
+
+    function padLine(text = "", width = 32) {
+      const clean = String(text).replace(/\s+/g, " ").trim();
+      if (clean.length <= width) return [clean];
+      const words = clean.split(" ");
+      const lines = [];
+      let line = "";
+      words.forEach(word => {
+        if (!line) {
+          line = word;
+        } else if ((line + " " + word).length <= width) {
+          line += " " + word;
+        } else {
+          lines.push(line);
+          line = word;
+        }
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function centerLine(text, width = 32) {
+      const clean = String(text).trim();
+      const left = Math.max(0, Math.floor((width - clean.length) / 2));
+      return " ".repeat(left) + clean;
+    }
+
+    function makePrintText() {
+      const rows = getPendingPrintRows();
+      const lines = [];
+      const date = new Date().toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric"
+      });
+
+      lines.push(centerLine("LIST BELANJA HIJAB"));
+      lines.push(centerLine(date));
+      lines.push("================================");
+
+      if (!rows.length) {
+        lines.push("Semua barang sudah selesai.");
+        lines.push("================================");
+        lines.push("Total: 0 pcs");
+        return lines.join("\n") + "\n\n\n";
+      }
+
+      const groups = new Map();
+      rows.forEach(row => {
+        if (!groups.has(row.supplier)) groups.set(row.supplier, []);
+        groups.get(row.supplier).push(row);
+      });
+
+      let totalPcs = 0;
+      [...groups.entries()].forEach(([supplier, supplierRows], groupIndex) => {
+        if (groupIndex > 0) lines.push("--------------------------------");
+        padLine(supplier, 32).forEach(line => lines.push(line));
+        supplierRows.forEach((row, index) => {
+          totalPcs += Number(row.qty) || 0;
+          padLine(`${index + 1}. ${row.name}`, 32).forEach(line => lines.push(line));
+          padLine(`   ${row.color} - ${row.qty} pcs`, 32).forEach(line => lines.push(line));
+          if (row.note) padLine(`   Catatan: ${row.note}`, 32).forEach(line => lines.push(line));
+        });
+      });
+
+      lines.push("================================");
+      lines.push(`Total pcs: ${totalPcs}`);
+      lines.push("\n\n");
+      return lines.join("\n");
+    }
+
+
+    function makePrintPayload() {
+      return JSON.stringify({
+        title: "LIST BELANJA TOKO HIJAB",
+        printerName: PRINTER_NAME,
+        paperMm: 80,
+        createdAt: new Date().toISOString(),
+        items: getPendingPrintRows().map(row => ({
+          supplierName: row.supplier,
+          name: row.name,
+          colorName: row.color,
+          qty: row.qty,
+          unit: "pcs",
+          note: row.note || ""
+        }))
+      });
+    }
+
+    function isAndroidNativePrinterReady() {
+      return !!(window.AndroidPrinter && typeof window.AndroidPrinter.printShoppingList === "function");
+    }
+
+    function checkAndroidNativePrinter() {
+      if (window.AndroidPrinter && typeof window.AndroidPrinter.checkPrinter === "function") {
+        window.AndroidPrinter.checkPrinter();
+        updatePrinterStatus(`Cek printer native: ${PRINTER_NAME}`);
+        return;
+      }
+      alert("Mode Android Studio belum terdeteksi bro. Buka file ini dari APK WebView, bukan langsung dari browser.");
+    }
+
+    function sendNativePrint() {
+      if (isAndroidNativePrinterReady()) {
+        window.AndroidPrinter.printShoppingList(makePrintPayload());
+        updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME}`);
+        return;
+      }
+      alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
+    }
+
+    function openPrintPreview() {
+      const text = makePrintText();
+      printPreviewText.textContent = text;
+      updatePrinterStatus(`Printer Android: ${PRINTER_NAME} • Kertas 80mm`);
+      printModal.classList.add("show");
+    }
+
+    function closePrintPreview() {
+      printModal.classList.remove("show");
+    }
+
+    async function chooseBluetoothPrinter() {
+      if (!navigator.bluetooth) {
+        alert("Bluetooth belum tersedia di WebView ini bro. Di Web2APK, aktifkan Web Bluetooth / Bluetooth permission dulu.");
+        return null;
+      }
+
+      updatePrinterStatus(`Mencari printer ${PRINTER_NAME}...`);
+      const optionalServices = [
+        "0000ffe0-0000-1000-8000-00805f9b34fb",
+        "0000ff00-0000-1000-8000-00805f9b34fb",
+        "000018f0-0000-1000-8000-00805f9b34fb",
+        "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+      ];
+
+      try {
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          filters: [
+            { name: PRINTER_NAME },
+            { namePrefix: "RPP02N" }
+          ],
+          optionalServices
+        });
+
+        bluetoothDevice.addEventListener("gattserverdisconnected", () => {
+          printerCharacteristic = null;
+          updatePrinterStatus(`Printer terputus: ${PRINTER_NAME}`);
+        });
+
+        const server = await bluetoothDevice.gatt.connect();
+        const services = await server.getPrimaryServices();
+
+        for (const service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (const characteristic of characteristics) {
+            if (characteristic.properties.write || characteristic.properties.writeWithoutResponse) {
+              printerCharacteristic = characteristic;
+              updatePrinterStatus(`Printer siap: ${bluetoothDevice.name || PRINTER_NAME}`);
+              showToast("Printer siap");
+              return printerCharacteristic;
+            }
+          }
+        }
+
+        alert("Printer ketemu, tapi channel cetaknya belum ketemu bro.");
+        updatePrinterStatus(`Printer belum siap: ${PRINTER_NAME}`);
+        return null;
+      } catch (error) {
+        console.error(error);
+        updatePrinterStatus(`Printer belum dipilih: ${PRINTER_NAME}`);
+        alert("Gagal memilih printer bro. Pastikan Bluetooth aktif dan printer RPP02N-FF57 menyala.");
+        return null;
+      }
+    }
+
+    async function sendTextToPrinter(text) {
+      const characteristic = printerCharacteristic || await chooseBluetoothPrinter();
+      if (!characteristic) return;
+
+      const encoder = new TextEncoder();
+      const escInit = new Uint8Array([0x1b, 0x40]);
+      const cutFeed = new Uint8Array([0x0a, 0x0a, 0x0a]);
+      const body = encoder.encode(text);
+      const payload = new Uint8Array(escInit.length + body.length + cutFeed.length);
+      payload.set(escInit, 0);
+      payload.set(body, escInit.length);
+      payload.set(cutFeed, escInit.length + body.length);
+
+      try {
+        for (let offset = 0; offset < payload.length; offset += 180) {
+          const chunk = payload.slice(offset, offset + 180);
+          if (characteristic.properties.writeWithoutResponse && characteristic.writeValueWithoutResponse) {
+            await characteristic.writeValueWithoutResponse(chunk);
+          } else {
+            await characteristic.writeValue(chunk);
+          }
+          await new Promise(resolve => setTimeout(resolve, 35));
+        }
+        showToast("List dikirim ke printer");
+        updatePrinterStatus(`Berhasil dikirim: ${bluetoothDevice?.name || PRINTER_NAME}`);
+      } catch (error) {
+        console.error(error);
+        printerCharacteristic = null;
+        alert("Gagal cetak bro. Coba pilih printer ulang.");
+        updatePrinterStatus(`Gagal cetak: ${PRINTER_NAME}`);
+      }
+    }
+
+
+    function renderList() {
+      renderSupplierList();
+      renderPendingPage();
+      if (selectedSupplier && pageDetail.classList.contains("active")) {
+        renderSupplierDetail(selectedSupplier);
+      }
+      if (pageBudget && pageBudget.classList.contains("active")) renderBudgetPage(true);
+    }
+
+    async function refreshItems() {
+      items = (await getAllItems()).map(normalizeItem);
+      pruneSelectedVariantKeys();
+      renderList();
+    }
+
+    async function clearAllDataKeepMaster() {
+      if (!(await requirePin("hapus semua data"))) return;
+
+      const savedData = getSavedData();
+      const ok = confirm("Hapus semua data belanja? Nama barang, supplier, dan warna tetap disimpan untuk saran input.");
+      if (!ok) return;
+
+      try {
+        saveStoredSavedData(savedData);
+        await clearAllItems();
+        items = [];
+        selectedSupplier = "";
+        selectedVariantKeys.clear();
+        resetForm();
+        await refreshItems();
+        updateSuggestions();
+        showPage("home");
+        showToast("Data dihapus, nama/supplier/warna tetap aman");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal hapus data bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    function getFormItem() {
+      const now = new Date().toISOString();
+      const oldItem = items.find(item => item.id === editId.value);
+      const oldVariants = oldItem ? normalizeItem(oldItem).variants : [];
+      const variants = getFormVariants().map((variant, index) => ({
+        ...variant,
+        done: oldVariants[index] ? Boolean(oldVariants[index].done) : false
+      }));
+
+      return {
+        id: editId.value || makeId(),
+        name: safeText(nameInput.value),
+        supplierName: safeText(supplierInput.value),
+        kodiPrice: Math.max(0, parseRupiah(kodiPriceInput.value)),
+        variants,
+        unit: DEFAULT_UNIT,
+        priority: priorityInput.value,
+        note: safeText(noteInput.value),
+        done: variants.length ? variants.every(variant => variant.done) : false,
+        createdAt: oldItem ? oldItem.createdAt : now,
+        updatedAt: now
+      };
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const item = getFormItem();
+      if (!item.name) return alert("Nama barang wajib diisi bro.");
+      if (item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Jumlah warna minimal 1 bro.");
+      try {
+        const edited = Boolean(editId.value);
+        rememberSavedFromItem(item);
+        await saveItem(item);
+        await refreshItems();
+        resetForm();
+        showToast(edited ? "Barang diperbarui" : "Barang ditambahkan");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menyimpan data bro. Coba refresh lalu ulangi.");
+      }
+    });
+
+    resetBtn.addEventListener("click", resetForm);
+    if (clearDataKeepMasterBtn) clearDataKeepMasterBtn.addEventListener("click", clearAllDataKeepMaster);
+    searchInput.addEventListener("input", renderList);
+    statusFilter.addEventListener("change", renderList);
+    if (budgetInput) {
+      budgetInput.addEventListener("input", () => {
+        budgetInput.value = budgetInput.value ? formatRupiah(parseRupiah(budgetInput.value)) : "";
+        if (budgetResultList) delete budgetResultList.dataset.calculated;
+      });
+      budgetInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          renderBudgetPage(true);
+        }
+      });
+    }
+    if (calculateBudgetBtn) calculateBudgetBtn.addEventListener("click", () => renderBudgetPage(true));
+    if (clearBudgetBtn) clearBudgetBtn.addEventListener("click", () => {
+      if (budgetInput) budgetInput.value = "";
+      if (budgetResultList) delete budgetResultList.dataset.calculated;
+      renderBudgetPage(false);
+    });
+
+
+    if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
+    if (closePrintBtn) closePrintBtn.addEventListener("click", closePrintPreview);
+    if (selectPrinterBtn) selectPrinterBtn.addEventListener("click", checkAndroidNativePrinter);
+    if (sendPrintBtn) sendPrintBtn.addEventListener("click", sendNativePrint);
+    if (printModal) printModal.addEventListener("click", event => {
+      if (event.target === printModal) closePrintPreview();
+    });
+
+    async function init() {
+      try {
+        db = await openDB();
+        setVariantRows([{ colorName: "", qty: 1 }]);
+        updatePricePreview();
+        await refreshItems();
+      } catch (error) {
+        console.error(error);
+        supplierList.innerHTML = `
+          <div class="empty">
+            Maaf bro, IndexedDB tidak bisa dibuka di browser ini.<br />
+            Coba pakai Chrome Android atau browser modern lainnya.
+          </div>
+        `;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
