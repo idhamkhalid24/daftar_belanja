@@ -112,6 +112,19 @@
       background: rgba(255,255,255,0.26);
     }
 
+    .refresh-logo-btn {
+      line-height: 1;
+      font-size: 20px;
+    }
+
+    .reset-top {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
     .today {
       display: inline-flex;
       padding: 7px 10px;
@@ -1928,6 +1941,222 @@
       }
     }
 
+
+
+    /* FIX: nav bawah diperbesar + tombol Hapus Data pindah ke header List Belanja */
+    .app {
+      padding-bottom: 120px;
+    }
+
+    .bottom-nav {
+      padding: 12px !important;
+      gap: 10px !important;
+      border-radius: 28px !important;
+    }
+
+    .nav-btn {
+      min-height: 58px !important;
+      border-radius: 18px !important;
+      padding: 13px 8px !important;
+      font-size: 13px !important;
+      line-height: 1.15;
+    }
+
+    .list-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 12px 10px !important;
+    }
+
+    .list-card-title {
+      min-width: 0;
+    }
+
+    .list-clear-btn {
+      flex: 0 0 auto;
+      min-height: 36px;
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media screen and (max-width: 480px) {
+      .app {
+        padding-bottom: 132px !important;
+      }
+
+      .bottom-nav {
+        width: calc(100% - 14px) !important;
+        bottom: 8px !important;
+        padding: 9px !important;
+        gap: 7px !important;
+        border-radius: 23px !important;
+      }
+
+      .nav-btn {
+        min-height: 54px !important;
+        border-radius: 16px !important;
+        padding: 11px 4px !important;
+        font-size: 12px !important;
+      }
+
+      .list-card-header {
+        gap: 11px;
+        padding: 10px 9px 9px !important;
+      }
+
+      .list-card-header h2 {
+        font-size: 14px;
+        line-height: 1.15;
+      }
+
+      .list-clear-btn {
+        min-height: 34px;
+        padding: 7px 11px;
+        font-size: 10.5px;
+      }
+    }
+
+
+
+    /* FIX FINAL: Hapus Data sejajar dengan refresh + nav bawah pakai icon */
+    .hero-control-stack {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+
+    .hero-actions {
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .hero-clear-data-btn {
+      min-height: 38px;
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 11.5px;
+      font-weight: 900;
+      background: rgba(254, 226, 226, 0.96);
+      color: #991b1b;
+      border: 1px solid rgba(255,255,255,0.26);
+      box-shadow: 0 8px 18px rgba(127, 29, 29, 0.12);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .hero-clear-data-btn:active {
+      transform: scale(0.98);
+      background: #fecaca;
+    }
+
+    .bottom-nav .nav-btn {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 64px !important;
+      padding: 9px 6px !important;
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .nav-label {
+      display: block;
+      font-size: 12px;
+      line-height: 1.1;
+      font-weight: 900;
+    }
+
+    @media screen and (max-width: 480px) {
+      .app {
+        padding-bottom: 144px !important;
+      }
+
+      .hero-top {
+        align-items: flex-start;
+      }
+
+      .hero-control-stack {
+        max-width: calc(100% - 98px);
+      }
+
+      .hero-actions {
+        gap: 5px;
+      }
+
+      .hero-clear-data-btn {
+        min-height: 31px;
+        padding: 6px 9px;
+        font-size: 9.5px;
+      }
+
+      .bottom-nav {
+        padding: 10px !important;
+        gap: 7px !important;
+        border-radius: 24px !important;
+      }
+
+      .bottom-nav .nav-btn {
+        min-height: 62px !important;
+        border-radius: 17px !important;
+        padding: 8px 3px !important;
+        gap: 4px;
+      }
+
+      .nav-icon {
+        font-size: 21px;
+      }
+
+      .nav-label {
+        font-size: 10.5px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .hero-clear-data-btn {
+        padding-left: 9px;
+        padding-right: 9px;
+      }
+
+      .bottom-nav .nav-btn {
+        min-height: 58px !important;
+      }
+
+      .nav-icon {
+        font-size: 19px;
+      }
+
+      .nav-label {
+        font-size: 9.5px;
+      }
+    }
+
+
+
+    /* FIX SIZE: card header atas kembali mengikuti isi karena Hapus Data sudah sejajar */
+    .hero {
+      height: auto !important;
+    }
+
+    @media screen and (max-width: 480px) {
+      .hero {
+        padding: 10px !important;
+      }
+    }
+
     @media print {
       body { background: #fff; }
       .hero, .bottom-nav, .page-home, .page-list, .page-pending, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
@@ -1946,9 +2175,13 @@
           <h1>List Belanja</h1>
           
         </div>
-        <div class="hero-actions">
-          <button class="printer-logo-btn" type="button" id="printerBtn" aria-label="Cetak List Belanja" title="Cetak List Belanja">🖨️</button>
-          <button class="reset-top" type="button" id="resetBtn">Reset</button>
+        <div class="hero-control-stack">
+          <div class="hero-actions">
+            <button class="printer-logo-btn refresh-logo-btn" type="button" id="refreshBtn" aria-label="Refresh Data" title="Refresh Data">↻</button>
+            <button class="btn btn-danger hero-clear-data-btn" type="button" id="clearDataKeepMasterBtn">Hapus Data</button>
+            <button class="printer-logo-btn" type="button" id="printerBtn" aria-label="Cetak List Belanja" title="Cetak List Belanja">🖨️</button>
+            <button class="reset-top" type="button" id="resetBtn">Reset</button>
+          </div>
         </div>
       </div>
       <div class="today" id="todayText">Hari ini</div>
@@ -2033,7 +2266,6 @@
 
         <div class="home-actions">
           <button class="btn btn-green" type="button" id="goListBtn">Lihat List Belanja</button>
-          <button class="btn btn-danger" type="button" id="clearDataKeepMasterBtn">Hapus Data</button>
         </div>
       </section>
     </section>
@@ -2111,10 +2343,22 @@
   </main>
 
   <nav class="bottom-nav">
-    <button class="nav-btn active" type="button" data-page="home">Home</button>
-    <button class="nav-btn" type="button" data-page="list">Supplier</button>
-    <button class="nav-btn" type="button" data-page="pending">Belum</button>
-    <button class="nav-btn" type="button" data-page="budget">Budget</button>
+    <button class="nav-btn active" type="button" data-page="home">
+      <span class="nav-icon" aria-hidden="true">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="list">
+      <span class="nav-icon" aria-hidden="true">🏬</span>
+      <span class="nav-label">Supplier</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="pending">
+      <span class="nav-icon" aria-hidden="true">⏳</span>
+      <span class="nav-label">Belum</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="budget">
+      <span class="nav-icon" aria-hidden="true">🧮</span>
+      <span class="nav-label">Budget</span>
+    </button>
   </nav>
 
   <div class="toast" id="toast">Tersimpan</div>
@@ -2187,6 +2431,7 @@
     const formTitle = document.getElementById("formTitle");
     const submitBtn = document.getElementById("submitBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
     const nameInput = document.getElementById("name");
     const supplierInput = document.getElementById("supplierName");
     const kodiPriceInput = document.getElementById("kodiPrice");
@@ -3947,6 +4192,18 @@
       renderList();
     }
 
+    async function manualRefreshData() {
+      try {
+        await refreshItems();
+        updateSuggestions();
+        showToast("Data diperbarui");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal refresh data bro. Coba ulangi.");
+      }
+    }
+
+
     async function clearAllDataKeepMaster() {
       if (!(await requirePin("hapus semua data"))) return;
 
@@ -4014,6 +4271,7 @@
     });
 
     resetBtn.addEventListener("click", resetForm);
+    if (refreshBtn) refreshBtn.addEventListener("click", manualRefreshData);
     if (clearDataKeepMasterBtn) clearDataKeepMasterBtn.addEventListener("click", clearAllDataKeepMaster);
     searchInput.addEventListener("input", renderList);
     statusFilter.addEventListener("change", renderList);
