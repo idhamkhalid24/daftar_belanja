@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>List Belanja Toko Hijab</title>
+  <style>
+    :root {
+      --card: #ffffff;
+      --text: #241528;
+      --muted: #7c647f;
+      --primary: #db2777;
+      --primary-dark: #be185d;
+      --green: #16a34a;
+      --red: #dc2626;
+      --border: #f1d9e8;
+      --soft: #fdf2f8;
+      --shadow: 0 12px 28px rgba(131, 24, 67, 0.10);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #fff1f7, #fff7ed 48%, #fdf2f8);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(760px, 94%);
+      margin: 0 auto;
+      padding: 10px 0 96px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #831843, #db2777, #f97316);
+      color: #fff;
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 7vw, 34px);
+      letter-spacing: -0.05em;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.55;
+      font-size: 12px;
+    }
+
+    .reset-top {
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .today {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      width: min(760px, 94%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 9px;
+      box-shadow: 0 18px 45px rgba(131, 24, 67, 0.18);
+      z-index: 999;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-btn {
+      border: 0;
+      border-radius: 17px;
+      padding: 13px 10px;
+      background: transparent;
+      color: #9d174d;
+      font-weight: 900;
+      cursor: pointer;
+      min-height: 50px;
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(219, 39, 119, 0.22);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 9px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -0.04em;
+      overflow-wrap: anywhere;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .card-header { padding: 12px 12px 0; }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-header p {
+      display: none;
+    }
+
+    form {
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      color: #56304d;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff9fc;
+      border-radius: 11px;
+      padding: 10px;
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(219, 39, 119, 0.12);
+    }
+
+    input[readonly] {
+      color: #9d174d;
+      font-weight: 900;
+      background: #fdf2f8;
+    }
+
+    textarea {
+      min-height: 56px;
+      resize: vertical;
+    }
+
+    .row, .btn-row, .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 42px;
+    }
+
+    .btn-row.single-action {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:active { background: var(--primary-dark); transform: scale(0.99); }
+    .btn-light { background: #fce7f3; color: #9d174d; }
+    .btn-danger { background: #fee2e2; color: #991b1b; }
+    .btn-green { background: #dcfce7; color: #166534; }
+
+    .home-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 0 12px 12px;
+    }
+
+    .variant-box {
+      border: 1px solid var(--border);
+      background: #fff7fb;
+      border-radius: 14px;
+      padding: 9px;
+    }
+
+    .variant-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .variant-head strong {
+      font-size: 13px;
+      color: #56304d;
+    }
+
+    .variant-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .variant-row {
+      display: grid;
+      grid-template-columns: 1fr 82px 38px;
+      gap: 6px;
+      align-items: end;
+    }
+
+    .variant-row label {
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .remove-variant {
+      border: 0;
+      border-radius: 13px;
+      height: 42px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .small-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 9px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .hint {
+      display: none;
+    }
+
+    .saved-wrap {
+      margin-top: 6px;
+    }
+
+    .saved-toggle {
+      border: 0;
+      border-radius: 999px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .saved-panel {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff7fb;
+    }
+
+    .saved-panel.show {
+      display: flex;
+    }
+
+    .saved-chip {
+      border: 0;
+      border-radius: 999px;
+      background: #fff;
+      color: #831843;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 9px;
+      cursor: pointer;
+    }
+
+    .saved-empty {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .variant-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 110px;
+      gap: 6px;
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .quick-actions {
+      padding: 0 8px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list {
+      display: grid;
+      gap: 5px;
+      padding: 8px;
+      background: #fff7fb;
+      min-height: 160px;
+    }
+
+    .supplier-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 9px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(131, 24, 67, 0.06);
+    }
+
+    .supplier-card strong {
+      display: block;
+      font-size: 13px;
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+
+    .supplier-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+    }
+
+    .supplier-arrow {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fce7f3;
+      color: #9d174d;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      align-self: center;
+    }
+
+    .detail-top {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: fit-content;
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fce7f3;
+      color: #9d174d;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .detail-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .detail-title p {
+      display: none;
+    }
+
+    .detail-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .detail-mini-stat {
+      background: #fff7fb;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 8px;
+    }
+
+    .detail-mini-stat span {
+      display: block;
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .detail-mini-stat strong {
+      display: block;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-detail {
+      display: grid;
+      gap: 7px;
+    }
+
+    .simple-row {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .simple-product-head {
+      padding: 9px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .simple-product-head span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .simple-product-head strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-variant-row {
+      display: grid;
+      grid-template-columns: 34px 1fr 0.8fr;
+      border-bottom: 1px solid var(--border);
+      align-items: stretch;
+    }
+
+    .simple-variant-row.variant-done .simple-cell strong {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .variant-check-wrap {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .variant-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+    }
+
+    .variant-check.done {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .simple-variant-row:last-child {
+      border-bottom: 0;
+    }
+
+    .simple-cell {
+      padding: 8px 9px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .simple-cell:last-child {
+      border-right: 0;
+    }
+
+    .simple-cell span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .simple-cell strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .simple-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 7px;
+      background: #fff7fb;
+      border-top: 1px solid var(--border);
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #f9a8d4;
+      background: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
+      margin-top: 2px;
+    }
+
+    .item.done .check {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .item-main h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .item.done h3 {
+      text-decoration: line-through;
+      color: #7c647f;
+    }
+
+    .meta, .variant-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .badge.qty { background: #ffedd5; color: #9a3412; }
+    .badge.color { background: #f3e8ff; color: #6b21a8; }
+    .badge.supplier { background: #e0f2fe; color: #075985; }
+    .badge.high { background: #fee2e2; color: #991b1b; }
+    .badge.medium { background: #fef3c7; color: #92400e; }
+    .badge.low { background: #dcfce7; color: #166534; }
+
+    .note {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .icon-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 7px 8px;
+      cursor: pointer;
+      background: var(--soft);
+      color: #831843;
+      font-weight: 800;
+      font-size: 11px;
+      min-width: 48px;
+    }
+
+    .icon-btn.danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 18px 8px;
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 92px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: #831843;
+      color: #fff;
+      padding: 12px 15px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 800;
+      pointer-events: none;
+      transition: 0.22s ease;
+      z-index: 1000;
+      width: max-content;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .db-info {
+      display: none;
+    }
+
+    @media (max-width: 620px) {
+      .app { width: 94%; padding-top: 12px; }
+      .hero { padding: 20px; }
+      .summary { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .stat { padding: 12px 10px; }
+      .stat strong { font-size: 21px; }
+      .row, .btn-row, .toolbar, .quick-actions { grid-template-columns: 1fr; }
+      .variant-row { grid-template-columns: 1fr 92px 42px; }
+      .detail-summary { grid-template-columns: repeat(3, 1fr); }
+      .simple-variant-row { grid-template-columns: 32px 1fr 0.7fr; }
+      .simple-cell { border-right: 0; border-bottom: 1px solid var(--border); }
+      .simple-cell:last-child { border-bottom: 0; }
+      .simple-actions { grid-template-columns: repeat(3, 1fr); }
+      .item { grid-template-columns: auto 1fr; }
+      .item-actions { grid-column: 1 / -1; flex-direction: row; }
+      .icon-btn { flex: 1; }
+    }
+    @media screen and (max-width: 480px) {
+      html, body {
+        width: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        background: #fff7fb;
+      }
+
+      .app {
+        width: 100%;
+        padding: 6px 7px 78px;
+      }
+
+      .hero {
+        border-radius: 14px;
+        padding: 10px;
+        margin-bottom: 7px;
+      }
+
+      .hero-top {
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .hero h1 {
+        font-size: 20px;
+        line-height: 1.05;
+        margin-bottom: 4px;
+      }
+
+      .hero p {
+        font-size: 10.5px;
+        line-height: 1.35;
+        max-width: 245px;
+      }
+
+      .reset-top {
+        padding: 6px 9px;
+        font-size: 10.5px;
+        min-height: 30px;
+      }
+
+      .today {
+        margin-top: 7px;
+        padding: 5px 8px;
+        font-size: 10.5px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        margin-bottom: 7px;
+      }
+
+      .stat {
+        border-radius: 10px;
+        padding: 6px 5px;
+        box-shadow: 0 4px 12px rgba(131, 24, 67, 0.06);
+      }
+
+      .stat span {
+        font-size: 7.5px;
+        letter-spacing: 0.02em;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .stat strong {
+        font-size: 12.5px;
+        line-height: 1.15;
+      }
+
+      .card {
+        border-radius: 12px;
+        margin-bottom: 7px;
+        box-shadow: 0 5px 14px rgba(131, 24, 67, 0.07);
+      }
+
+      .card-header {
+        padding: 9px 9px 0;
+      }
+
+      .card-header h2 {
+        font-size: 14px;
+      }
+
+      .card-header p {
+        font-size: 10.5px;
+        line-height: 1.3;
+      }
+
+      form {
+        padding: 9px;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 10.5px;
+        margin-bottom: 3px;
+      }
+
+      input, select, textarea {
+        border-radius: 9px;
+        padding: 8px;
+        font-size: 14px;
+        min-height: 36px;
+      }
+
+      textarea {
+        min-height: 44px;
+      }
+
+      .row {
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+      }
+
+      .btn-row, .quick-actions {
+        gap: 5px;
+      }
+
+      .btn {
+        min-height: 36px;
+        border-radius: 10px;
+        padding: 8px 9px;
+        font-size: 12px;
+      }
+
+      .home-actions {
+        padding: 0 9px 9px;
+      }
+
+      .variant-box {
+        border-radius: 11px;
+        padding: 7px;
+      }
+
+      .variant-head {
+        gap: 5px;
+        margin-bottom: 5px;
+      }
+
+      .variant-head strong {
+        font-size: 11px;
+        line-height: 1.2;
+      }
+
+      .variant-actions {
+        gap: 4px;
+      }
+
+      .small-btn,
+      .saved-toggle,
+      .saved-chip {
+        font-size: 10px;
+        padding: 6px 7px;
+      }
+
+      .variant-list {
+        gap: 5px;
+      }
+
+      .variant-row {
+        grid-template-columns: minmax(0, 1fr) 62px 32px;
+        gap: 4px;
+      }
+
+      .variant-row label {
+        font-size: 10px;
+        margin-bottom: 2px;
+      }
+
+      .variant-qty {
+        text-align: center;
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      .remove-variant {
+        height: 36px;
+        border-radius: 9px;
+        font-size: 16px;
+      }
+
+      .hint {
+        font-size: 9.5px;
+        line-height: 1.25;
+        margin-top: 4px;
+      }
+
+      .saved-wrap {
+        margin-top: 4px;
+      }
+
+      .saved-panel {
+        gap: 4px;
+        margin-top: 5px;
+        padding: 6px;
+        border-radius: 10px;
+        max-height: 92px;
+        overflow-y: auto;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr 94px;
+        gap: 4px;
+        padding: 6px;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr 1fr;
+        padding: 0 6px 6px;
+      }
+
+      .list {
+        gap: 4px;
+        padding: 6px;
+        min-height: 120px;
+      }
+
+      .supplier-card {
+        border-radius: 9px;
+        padding: 7px 8px;
+        gap: 5px;
+        box-shadow: none;
+      }
+
+      .supplier-card strong {
+        font-size: 12px;
+        margin-bottom: 1px;
+      }
+
+      .supplier-card span {
+        font-size: 9px;
+        line-height: 1.2;
+      }
+
+      .supplier-arrow {
+        width: 19px;
+        height: 19px;
+        font-size: 13px;
+      }
+
+      .detail-top {
+        gap: 5px;
+        padding: 7px;
+      }
+
+      .back-btn {
+        padding: 6px 8px;
+        font-size: 10.5px;
+      }
+
+      .detail-title h2 {
+        font-size: 15px;
+      }
+
+      .detail-title p {
+        font-size: 9.5px;
+        line-height: 1.25;
+      }
+
+      .detail-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .detail-mini-stat {
+        border-radius: 9px;
+        padding: 6px 5px;
+      }
+
+      .detail-mini-stat span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+      }
+
+      .detail-mini-stat strong {
+        font-size: 11.5px;
+        line-height: 1.15;
+      }
+
+      .simple-detail {
+        gap: 5px;
+      }
+
+      .simple-row {
+        border-radius: 9px;
+      }
+
+      .simple-product-head {
+        padding: 7px;
+      }
+
+      .simple-product-head span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+      }
+
+      .simple-product-head strong {
+        font-size: 13px;
+        line-height: 1.2;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px minmax(0, 1fr) 72px;
+      }
+
+      .variant-check {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        border-width: 1.5px;
+      }
+
+      .simple-cell {
+        padding: 6px 7px;
+      }
+
+      .simple-cell span {
+        font-size: 7.5px;
+        margin-bottom: 2px;
+      }
+
+      .simple-cell strong {
+        font-size: 11.5px;
+        line-height: 1.2;
+      }
+
+      .simple-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 5px;
+        padding: 6px;
+      }
+
+      .icon-btn {
+        border-radius: 8px;
+        padding: 6px 7px;
+        font-size: 10.5px;
+        min-height: 32px;
+      }
+
+      .empty {
+        padding: 14px 7px;
+        font-size: 11px;
+      }
+
+      .db-info {
+        font-size: 10px;
+        line-height: 1.3;
+        margin-top: 6px;
+        padding: 0 8px;
+      }
+
+      .bottom-nav {
+        width: calc(100% - 14px);
+        bottom: 7px;
+        border-radius: 17px;
+        padding: 6px;
+        gap: 6px;
+      }
+
+      .nav-btn {
+        min-height: 40px;
+        border-radius: 12px;
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .toast {
+        bottom: 68px;
+        padding: 9px 11px;
+        font-size: 11px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .hero p {
+        display: none;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat strong {
+        font-size: 14px;
+      }
+
+      .variant-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .variant-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .simple-variant-row {
+        grid-template-columns: 28px 1fr 64px;
+      }
+    }
+
+
+    /* FIX: card ringkasan Model / Belum / Total Pcs / Total Modal jadi 2 atas + 2 bawah di Android */
+    @media screen and (max-width: 480px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+      }
+
+      .stat {
+        border-radius: 12px !important;
+        padding: 9px 8px !important;
+      }
+
+      .stat span {
+        font-size: 8.5px !important;
+        margin-bottom: 3px !important;
+        white-space: nowrap !important;
+      }
+
+      .stat strong {
+        font-size: 16px !important;
+        line-height: 1.15 !important;
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .hero, .bottom-nav, .page-home, .page-list, .toolbar, .quick-actions, .item-actions, .db-info, .toast, .back-btn { display: none !important; }
+      .page-detail { display: block !important; }
+      .app { width: 100%; padding: 0; }
+      .card, .stat, .item { box-shadow: none; }
+      .list { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>List Belanja Toko Hijab</h1>
+          
+        </div>
+        <button class="reset-top" type="button" id="resetBtn">Reset</button>
+      </div>
+      <div class="today" id="todayText">Hari ini</div>
+    </section>
+
+    <section class="summary">
+      <div class="stat"><span>Model</span><strong id="totalCount">0</strong></div>
+      <div class="stat"><span>Belum</span><strong id="pendingCount">0</strong></div>
+      <div class="stat"><span>Total Pcs</span><strong id="totalPcsCount">0</strong></div>
+      <div class="stat"><span>Total Modal</span><strong id="totalModalCount">Rp0</strong></div>
+    </section>
+
+    <section class="page page-home active" id="pageHome">
+      <section class="card form-card">
+        <div class="card-header">
+          <h2 id="formTitle">Tambah Barang Hijab</h2>
+          <p>Input dibuat simpel: isi model, supplier, harga kodian, warna, dan jumlah pcs.</p>
+        </div>
+
+        <form id="itemForm">
+          <input type="hidden" id="editId" />
+          <datalist id="itemNameOptions"></datalist>
+          <datalist id="supplierOptions"></datalist>
+          <datalist id="colorOptions"></datalist>
+
+          <div>
+            <label for="name">Nama Barang / Model</label>
+            <input id="name" type="text" list="itemNameOptions" placeholder="" autocomplete="off" required />
+          </div>
+
+          <div>
+            <label for="supplierName">Nama Supplier</label>
+            <input id="supplierName" type="text" list="supplierOptions" placeholder="" autocomplete="off" />
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="kodiPrice">Harga Kodian</label>
+              <input id="kodiPrice" type="text" inputmode="numeric" placeholder="" />
+            </div>
+            <div>
+              <label for="pcsPricePreview">Harga per Pcs</label>
+              <input id="pcsPricePreview" type="text" value="Rp0" readonly />
+            </div>
+          </div>
+          
+
+          <div class="variant-box">
+            <div class="variant-head">
+              <strong>Warna dan Jumlah Pcs</strong>
+              <div class="variant-actions">
+                <button class="small-btn" type="button" data-saved-target="colorSavedPanel">Warna tersimpan ▾</button>
+                <button class="small-btn" type="button" id="addVariantBtn">+ Tambah Warna</button>
+              </div>
+            </div>
+            <div class="variant-list" id="variantList"></div>
+            <div class="saved-panel" id="colorSavedPanel"></div>
+            
+          </div>
+
+          <div>
+            <label for="priority">Kebutuhan Stok</label>
+            <select id="priority">
+              <option value="Tinggi">Stok Habis</option>
+              <option value="Sedang" selected>Stok Menipis</option>
+              <option value="Rendah">Tambahan</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="note">Catatan</label>
+            <textarea id="note" placeholder=""></textarea>
+          </div>
+
+          <div class="btn-row single-action">
+            <button class="btn btn-primary" type="submit" id="submitBtn">+ Tambah ke List</button>
+          </div>
+        </form>
+
+        <div class="home-actions">
+          <button class="btn btn-green" type="button" id="goListBtn">Lihat List Belanja</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="page page-list" id="pageList">
+      <section class="card">
+        <div class="card-header">
+          <h2>List Belanja per Supplier</h2>
+          <p>Klik nama supplier untuk masuk ke halaman detail belanja supplier tersebut.</p>
+        </div>
+
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="Cari supplier, hijab, warna..." />
+          <select id="statusFilter">
+            <option value="all">Semua</option>
+            <option value="pending">Belum dibeli</option>
+            <option value="done">Sudah dibeli</option>
+          </select>
+        </div>
+
+        <div class="quick-actions">
+          <button class="btn btn-green" type="button" id="printBtn">Print Detail</button>
+          <button class="btn btn-danger" type="button" id="clearDoneBtn">Hapus Selesai</button>
+        </div>
+
+        <div class="list" id="supplierList"></div>
+      </section>
+    </section>
+
+    <section class="page page-detail" id="pageDetail">
+      <section class="card">
+        <div class="detail-top">
+          
+          <div class="detail-title">
+            <h2 id="detailSupplierName">Supplier</h2>
+            
+          </div>
+          <div class="detail-summary" id="detailSummary"></div>
+        </div>
+        <div class="list" id="detailItemList"></div>
+      </section>
+    </section>
+
+    
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" type="button" data-page="home">Home</button>
+    <button class="nav-btn" type="button" data-page="list">List Belanja</button>
+  </nav>
+
+  <div class="toast" id="toast">Tersimpan</div>
+
+  <script>
+    const DB_NAME = "belanja_toko_hijab_android_db";
+    const DB_VERSION = 1;
+    const STORE_NAME = "items";
+    const DEFAULT_UNIT = "pcs";
+    const UNSET_SUPPLIER = "Supplier belum diisi";
+
+    const pageHome = document.getElementById("pageHome");
+    const pageList = document.getElementById("pageList");
+    const pageDetail = document.getElementById("pageDetail");
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const goListBtn = document.getElementById("goListBtn");
+    const backToListBtn = document.getElementById("backToListBtn");
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const form = document.getElementById("itemForm");
+    const editId = document.getElementById("editId");
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const nameInput = document.getElementById("name");
+    const supplierInput = document.getElementById("supplierName");
+    const kodiPriceInput = document.getElementById("kodiPrice");
+    const pcsPricePreview = document.getElementById("pcsPricePreview");
+    const variantList = document.getElementById("variantList");
+    const addVariantBtn = document.getElementById("addVariantBtn");
+    const priorityInput = document.getElementById("priority");
+    const noteInput = document.getElementById("note");
+    const itemNameOptions = document.getElementById("itemNameOptions");
+    const supplierOptions = document.getElementById("supplierOptions");
+    const colorOptions = document.getElementById("colorOptions");
+    const itemNameSavedPanel = document.getElementById("itemNameSavedPanel");
+    const supplierSavedPanel = document.getElementById("supplierSavedPanel");
+    const colorSavedPanel = document.getElementById("colorSavedPanel");
+    const savedToggleButtons = document.querySelectorAll("[data-saved-target]");
+
+    const supplierList = document.getElementById("supplierList");
+    const detailItemList = document.getElementById("detailItemList");
+    const detailSupplierName = document.getElementById("detailSupplierName");
+    const detailSupplierNote = document.getElementById("detailSupplierNote");
+    const detailSummary = document.getElementById("detailSummary");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const printBtn = document.getElementById("printBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const totalCount = document.getElementById("totalCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const totalPcsCount = document.getElementById("totalPcsCount");
+    const totalModalCount = document.getElementById("totalModalCount");
+    const todayText = document.getElementById("todayText");
+    const toast = document.getElementById("toast");
+
+    let db = null;
+    let items = [];
+    let selectedSupplier = "";
+    let activeColorInput = null;
+
+    todayText.textContent = new Date().toLocaleDateString("id-ID", {
+      weekday: "long", day: "2-digit", month: "long", year: "numeric"
+    });
+
+    function showPage(pageName) {
+      pageHome.classList.toggle("active", pageName === "home");
+      pageList.classList.toggle("active", pageName === "list");
+      pageDetail.classList.toggle("active", pageName === "detail");
+
+      navButtons.forEach(button => {
+        const activeName = pageName === "detail" ? "list" : pageName;
+        button.classList.toggle("active", button.dataset.page === activeName);
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    navButtons.forEach(button => button.addEventListener("click", () => showPage(button.dataset.page)));
+    goListBtn.addEventListener("click", () => showPage("list"));
+    if (backToListBtn) backToListBtn.addEventListener("click", () => showPage("list"));
+
+    pageDetail.addEventListener("touchstart", event => {
+      const touch = event.changedTouches[0];
+      touchStartX = touch.screenX;
+      touchStartY = touch.screenY;
+    }, { passive: true });
+
+    pageDetail.addEventListener("touchend", event => {
+      const touch = event.changedTouches[0];
+      touchEndX = touch.screenX;
+      touchEndY = touch.screenY;
+
+      const diffX = touchStartX - touchEndX;
+      const diffY = Math.abs(touchStartY - touchEndY);
+
+      if (pageDetail.classList.contains("active") && diffX > 70 && diffY < 80) {
+        showPage("list");
+      }
+    }, { passive: true });
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("IndexedDB tidak didukung."));
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = event => {
+          const database = event.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
+            store.createIndex("createdAt", "createdAt", { unique: false });
+            store.createIndex("done", "done", { unique: false });
+          }
+        };
+        request.onsuccess = event => resolve(event.target.result);
+        request.onerror = event => reject(event.target.error);
+      });
+    }
+
+    function runStore(mode, callback) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, mode);
+        const store = tx.objectStore(STORE_NAME);
+        let result;
+        try { result = callback(store); }
+        catch (error) { reject(error); return; }
+        tx.oncomplete = () => resolve(result);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    function getAllItems() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function saveItem(item) { return runStore("readwrite", store => store.put(item)); }
+    function removeItemById(id) { return runStore("readwrite", store => store.delete(id)); }
+    function clearDoneVariants() {
+      return runStore("readwrite", store => {
+        items.forEach(rawItem => {
+          const item = normalizeItem(rawItem);
+          const hasDone = item.variants.some(variant => variant.done);
+          if (!hasDone) return;
+
+          const remainingVariants = item.variants.filter(variant => !variant.done);
+          if (!remainingVariants.length) {
+            store.delete(item.id);
+          } else {
+            store.put({
+              ...item,
+              variants: remainingVariants,
+              done: false,
+              updatedAt: new Date().toISOString()
+            });
+          }
+        });
+      });
+    }
+
+    function makeId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+
+    function safeText(value) {
+      return String(value || "").replace(/[<>]/g, "").trim();
+    }
+
+    function formatRupiah(value) {
+      const number = Number(value) || 0;
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency", currency: "IDR", maximumFractionDigits: 0
+      }).format(number);
+    }
+
+    function parseRupiah(value) {
+      return Number(String(value || "").replace(/[^0-9]/g, "")) || 0;
+    }
+
+    function formatKodiPriceInput() {
+      const value = parseRupiah(kodiPriceInput.value);
+      kodiPriceInput.value = value ? formatRupiah(value) : "";
+      updatePricePreview();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function priorityClass(priority) {
+      if (priority === "Tinggi") return "high";
+      if (priority === "Rendah") return "low";
+      return "medium";
+    }
+
+    function priorityLabel(priority) {
+      if (priority === "Tinggi") return "Stok Habis";
+      if (priority === "Rendah") return "Tambahan";
+      return "Stok Menipis";
+    }
+
+    function normalizeItem(item) {
+      const oldItemDone = Boolean(item.done);
+      const variants = Array.isArray(item.variants) && item.variants.length
+        ? item.variants.map(v => ({
+            colorName: safeText(v.colorName),
+            qty: Math.max(1, Number(v.qty) || 1),
+            done: Boolean(v.done) || oldItemDone
+          }))
+        : [{
+            colorName: safeText(item.colorName),
+            qty: Math.max(1, Number(item.qty) || 1),
+            done: oldItemDone
+          }];
+
+      return {
+        ...item,
+        id: item.id || makeId(),
+        name: safeText(item.name),
+        supplierName: safeText(item.supplierName),
+        kodiPrice: Math.max(0, Number(item.kodiPrice) || 0),
+        variants,
+        unit: DEFAULT_UNIT,
+        priority: item.priority || "Sedang",
+        note: safeText(item.note),
+        done: variants.length ? variants.every(variant => variant.done) : oldItemDone,
+        createdAt: item.createdAt || new Date().toISOString()
+      };
+    }
+
+    function getSupplierKey(item) { return normalizeItem(item).supplierName || UNSET_SUPPLIER; }
+    function getTotalQty(item) { return normalizeItem(item).variants.reduce((sum, variant) => sum + variant.qty, 0); }
+    function getPendingQty(item) { return normalizeItem(item).variants.filter(variant => !variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
+    function getDoneQty(item) { return normalizeItem(item).variants.filter(variant => variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
+    function hasDoneVariant(item) { return normalizeItem(item).variants.some(variant => variant.done); }
+    function hasPendingVariant(item) { return normalizeItem(item).variants.some(variant => !variant.done); }
+    function getPcsPrice(item) { const data = normalizeItem(item); return data.kodiPrice > 0 ? data.kodiPrice / 20 : 0; }
+    function getTotalNominal(item) { return getTotalQty(item) * getPcsPrice(item); }
+    function getPendingNominal(item) { return getPendingQty(item) * getPcsPrice(item); }
+
+    function updatePricePreview() {
+      pcsPricePreview.value = formatRupiah(parseRupiah(kodiPriceInput.value) / 20);
+    }
+
+    function addVariantRow(colorName = "", qty = 1) {
+      const row = document.createElement("div");
+      row.className = "variant-row";
+
+      const colorWrap = document.createElement("div");
+      const colorLabel = document.createElement("label");
+      colorLabel.textContent = "Warna / Motif";
+      const color = document.createElement("input");
+      color.className = "variant-color";
+      color.type = "text";
+      color.setAttribute("list", "colorOptions");
+      color.placeholder = "";
+      color.autocomplete = "off";
+      color.value = safeText(colorName);
+      color.addEventListener("focus", () => {
+        activeColorInput = color;
+      });
+      color.addEventListener("click", () => {
+        activeColorInput = color;
+      });
+      colorWrap.append(colorLabel, color);
+
+      const qtyWrap = document.createElement("div");
+      const qtyLabel = document.createElement("label");
+      qtyLabel.textContent = "Qty";
+      const qtyInput = document.createElement("input");
+      qtyInput.className = "variant-qty";
+      qtyInput.type = "number";
+      qtyInput.min = "1";
+      qtyInput.step = "1";
+      qtyInput.inputMode = "numeric";
+      qtyInput.value = Math.max(1, Number(qty) || 1);
+      qtyWrap.append(qtyLabel, qtyInput);
+
+      const remove = document.createElement("button");
+      remove.className = "remove-variant";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.addEventListener("click", () => {
+        const rows = variantList.querySelectorAll(".variant-row");
+        if (rows.length <= 1) {
+          color.value = "";
+          qtyInput.value = 1;
+        } else {
+          row.remove();
+        }
+      });
+
+      row.append(colorWrap, qtyWrap, remove);
+      variantList.appendChild(row);
+    }
+
+    function setVariantRows(variants) {
+      variantList.innerHTML = "";
+      const list = Array.isArray(variants) && variants.length ? variants : [{ colorName: "", qty: 1 }];
+      list.forEach(variant => addVariantRow(variant.colorName, variant.qty));
+    }
+
+    function getFormVariants() {
+      return [...variantList.querySelectorAll(".variant-row")].map(row => ({
+        colorName: safeText(row.querySelector(".variant-color").value),
+        qty: Math.max(1, Number(row.querySelector(".variant-qty").value) || 1)
+      }));
+    }
+
+    function makeSavedChip(text, onClick) {
+      const chip = document.createElement("button");
+      chip.className = "saved-chip";
+      chip.type = "button";
+      chip.textContent = text;
+      chip.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      });
+      return chip;
+    }
+
+    function getSavedData() {
+      const itemNames = new Set();
+      const suppliers = new Set();
+      const colors = new Set();
+
+      items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        if (item.name) itemNames.add(item.name);
+        if (item.supplierName) suppliers.add(item.supplierName);
+        item.variants.forEach(variant => {
+          if (variant.colorName) colors.add(variant.colorName);
+        });
+      });
+
+      return {
+        itemNames: [...itemNames].sort((a, b) => a.localeCompare(b, "id-ID")),
+        suppliers: [...suppliers].sort((a, b) => a.localeCompare(b, "id-ID")),
+        colors: [...colors].sort((a, b) => a.localeCompare(b, "id-ID"))
+      };
+    }
+
+    function prefixFilter(values, keyword) {
+      const clean = safeText(keyword).toLowerCase();
+      if (!clean) return values;
+      return values.filter(value => value.toLowerCase().startsWith(clean));
+    }
+
+    function fillSavedPanel(panel, values, onClick, emptyText) {
+      if (!panel) return;
+      panel.innerHTML = "";
+      if (!values.length) {
+        const empty = document.createElement("span");
+        empty.className = "saved-empty";
+        empty.textContent = emptyText;
+        panel.appendChild(empty);
+        return;
+      }
+      values.forEach(value => panel.appendChild(makeSavedChip(value, () => onClick(value))));
+    }
+
+    function renderSavedPanels() {
+      const saved = getSavedData();
+
+      fillSavedPanel(
+        itemNameSavedPanel,
+        prefixFilter(saved.itemNames, nameInput.value),
+        value => {
+          nameInput.value = value;
+          if (itemNameSavedPanel) itemNameSavedPanel.classList.remove("show");
+        },
+        "Belum ada nama tersimpan."
+      );
+
+      fillSavedPanel(
+        supplierSavedPanel,
+        prefixFilter(saved.suppliers, supplierInput.value),
+        value => {
+          supplierInput.value = value;
+          if (supplierSavedPanel) supplierSavedPanel.classList.remove("show");
+        },
+        "Belum ada supplier tersimpan."
+      );
+
+      const activeValue = activeColorInput ? activeColorInput.value : "";
+      fillSavedPanel(
+        colorSavedPanel,
+        prefixFilter(saved.colors, activeValue),
+        value => {
+          const target = activeColorInput || variantList.querySelector(".variant-color");
+          if (target) target.value = value;
+          colorSavedPanel.classList.remove("show");
+        },
+        "Belum ada warna tersimpan."
+      );
+    }
+
+    function updateSuggestions() {
+      const saved = getSavedData();
+
+      itemNameOptions.innerHTML = "";
+      saved.itemNames.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        itemNameOptions.appendChild(option);
+      });
+
+      supplierOptions.innerHTML = "";
+      saved.suppliers.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        supplierOptions.appendChild(option);
+      });
+
+      colorOptions.innerHTML = "";
+      saved.colors.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        colorOptions.appendChild(option);
+      });
+
+      renderSavedPanels();
+    }
+
+    document.addEventListener("click", event => {
+      const toggle = event.target.closest("[data-saved-target]");
+      if (!toggle) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      const target = document.getElementById(toggle.dataset.savedTarget);
+      if (!target) return;
+
+      renderSavedPanels();
+      document.querySelectorAll(".saved-panel").forEach(panel => {
+        if (panel !== target) panel.classList.remove("show");
+      });
+      target.classList.toggle("show");
+    });
+
+    nameInput.addEventListener("input", () => {
+      renderSavedPanels();
+      if (nameInput.value.trim() && itemNameSavedPanel) itemNameSavedPanel.classList.add("show");
+    });
+
+    supplierInput.addEventListener("input", () => {
+      renderSavedPanels();
+      if (supplierInput.value.trim() && supplierSavedPanel) supplierSavedPanel.classList.add("show");
+    });
+
+    variantList.addEventListener("input", event => {
+      if (!event.target.classList.contains("variant-color")) return;
+      activeColorInput = event.target;
+      renderSavedPanels();
+      if (event.target.value.trim()) colorSavedPanel.classList.add("show");
+    });
+
+    addVariantBtn.addEventListener("click", () => addVariantRow());
+    kodiPriceInput.addEventListener("input", formatKodiPriceInput);
+    kodiPriceInput.addEventListener("blur", formatKodiPriceInput);
+
+    function resetForm() {
+      editId.value = "";
+      form.reset();
+      priorityInput.value = "Sedang";
+      kodiPriceInput.value = "";
+      updatePricePreview();
+      setVariantRows([{ colorName: "", qty: 1 }]);
+      formTitle.textContent = "Tambah Barang Hijab";
+      submitBtn.textContent = "+ Tambah ke List";
+      nameInput.focus();
+    }
+
+    function sortItems(data) {
+      const rank = { Tinggi: 1, Sedang: 2, Rendah: 3 };
+      return [...data].sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        if (rank[a.priority] !== rank[b.priority]) return rank[a.priority] - rank[b.priority];
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      });
+    }
+
+    function getFilteredItems() {
+      const keyword = searchInput.value.toLowerCase().trim();
+      const status = statusFilter.value;
+      return sortItems(items).filter(rawItem => {
+        const item = normalizeItem(rawItem);
+        const colorText = item.variants.map(variant => variant.colorName).join(" ");
+        const qtyText = item.variants.map(variant => variant.qty).join(" ");
+        const matchKeyword = [item.name, colorText, qtyText, item.supplierName, item.note, item.unit, item.kodiPrice]
+          .join(" ").toLowerCase().includes(keyword);
+        const matchStatus = status === "all" || (status === "done" && hasDoneVariant(item)) || (status === "pending" && hasPendingVariant(item));
+        return matchKeyword && matchStatus;
+      });
+    }
+
+    function renderSummary() {
+      const pendingItems = items.filter(item => hasPendingVariant(item));
+      totalCount.textContent = items.length;
+      pendingCount.textContent = pendingItems.length;
+      totalPcsCount.textContent = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      totalModalCount.textContent = formatRupiah(pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0));
+    }
+
+    function createBadge(text, className) {
+      const span = document.createElement("span");
+      span.className = `badge ${className}`;
+      span.textContent = text;
+      return span;
+    }
+
+    async function deleteItem(item) {
+      const ok = confirm(`Hapus "${item.name}" dari list belanja?`);
+      if (!ok) return;
+      try {
+        await removeItemById(item.id);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast("Barang dihapus");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menghapus barang bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function toggleVariantDone(item, variantIndex) {
+      const data = normalizeItem(item);
+      data.variants = data.variants.map((variant, index) => {
+        if (index !== variantIndex) return variant;
+        return { ...variant, done: !variant.done };
+      });
+      data.done = data.variants.every(variant => variant.done);
+      data.updatedAt = new Date().toISOString();
+
+      try {
+        await saveItem(data);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast(data.variants[variantIndex].done ? "Warna ditandai sudah dibeli" : "Warna dikembalikan belum dibeli");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal mengubah status warna bro.");
+      }
+    }
+
+    async function toggleDone(item) {
+      const data = normalizeItem(item);
+      const nextDone = !data.done;
+      data.variants = data.variants.map(variant => ({ ...variant, done: nextDone }));
+      data.done = nextDone;
+      data.updatedAt = new Date().toISOString();
+
+      try {
+        await saveItem(data);
+        await refreshItems();
+        if (selectedSupplier) renderSupplierDetail(selectedSupplier);
+        showToast(nextDone ? "Semua warna ditandai sudah dibeli" : "Semua warna dikembalikan belum dibeli");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal mengubah status bro.");
+      }
+    }
+
+    function editItem(item) {
+      const data = normalizeItem(item);
+      editId.value = data.id;
+      nameInput.value = data.name;
+      supplierInput.value = data.supplierName || "";
+      kodiPriceInput.value = data.kodiPrice ? formatRupiah(data.kodiPrice) : "";
+      updatePricePreview();
+      setVariantRows(data.variants);
+      priorityInput.value = data.priority;
+      noteInput.value = data.note;
+      formTitle.textContent = "Edit Barang Hijab";
+      submitBtn.textContent = "Simpan Perubahan";
+      showPage("home");
+      setTimeout(() => nameInput.focus(), 350);
+    }
+
+    function createItemElement(rawItem) {
+      const item = normalizeItem(rawItem);
+      const el = document.createElement("div");
+      el.className = "item" + (item.done ? " done" : "");
+
+      const check = document.createElement("button");
+      check.className = "check";
+      check.type = "button";
+      check.textContent = item.done ? "✓" : "";
+      check.addEventListener("click", () => toggleDone(item));
+
+      const main = document.createElement("div");
+      main.className = "item-main";
+      const title = document.createElement("h3");
+      title.textContent = item.name;
+      main.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.appendChild(createBadge(`Total ${getTotalQty(item)} ${item.unit}`, "qty"));
+      meta.appendChild(createBadge(`Kodi ${formatRupiah(item.kodiPrice)}`, "qty"));
+      meta.appendChild(createBadge(`Pcs ${formatRupiah(getPcsPrice(item))}`, "qty"));
+      meta.appendChild(createBadge(`Modal ${formatRupiah(getTotalNominal(item))}`, "qty"));
+      meta.appendChild(createBadge(priorityLabel(item.priority), priorityClass(item.priority)));
+      main.appendChild(meta);
+
+      const variantBadges = document.createElement("div");
+      variantBadges.className = "variant-badges";
+      item.variants.forEach(variant => {
+        variantBadges.appendChild(createBadge(`${variant.colorName || "Tanpa warna"}: ${variant.qty} ${item.unit}`, "color"));
+      });
+      main.appendChild(variantBadges);
+
+      if (item.note) {
+        const note = document.createElement("p");
+        note.className = "note";
+        note.textContent = item.note;
+        main.appendChild(note);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "item-actions";
+      const edit = document.createElement("button");
+      edit.className = "icon-btn";
+      edit.type = "button";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", () => editItem(item));
+
+      const del = document.createElement("button");
+      del.className = "icon-btn danger";
+      del.type = "button";
+      del.textContent = "Hapus";
+      del.addEventListener("click", () => deleteItem(item));
+
+      actions.append(edit, del);
+      el.append(check, main, actions);
+      return el;
+    }
+
+    function getSupplierGroups() {
+      const groups = new Map();
+      getFilteredItems().forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const supplier = getSupplierKey(item);
+        if (!groups.has(supplier)) groups.set(supplier, []);
+        groups.get(supplier).push(item);
+      });
+      return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], "id-ID"));
+    }
+
+    function renderSupplierList() {
+      updateSuggestions();
+      renderSummary();
+      supplierList.innerHTML = "";
+      const groups = getSupplierGroups();
+
+      if (!groups.length) {
+        supplierList.innerHTML = `
+          <div class="empty">
+            Belum ada supplier di list.<br />
+            Tambahkan stok hijab dari halaman Home dulu bro.
+          </div>
+        `;
+        return;
+      }
+
+      groups.forEach(([supplierName, supplierItems]) => {
+        const pendingItems = supplierItems.filter(item => !item.done);
+        const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+        const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+        const card = document.createElement("button");
+        card.className = "supplier-card";
+        card.type = "button";
+        card.style.pointerEvents = "auto";
+
+        const content = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = supplierName;
+        const info = document.createElement("span");
+        info.textContent = `${supplierItems.length} model • ${pendingItems.length} belum dibeli • ${totalPcs} pcs • ${formatRupiah(totalModal)}`;
+        content.append(name, info);
+
+        const arrow = document.createElement("div");
+        arrow.className = "supplier-arrow";
+        arrow.textContent = "›";
+
+        card.append(content, arrow);
+        card.addEventListener("click", () => openSupplierDetail(supplierName));
+        supplierList.appendChild(card);
+      });
+    }
+
+    function getItemsForSupplier(supplierName) {
+      return sortItems(items).filter(item => getSupplierKey(item) === supplierName);
+    }
+
+    function openSupplierDetail(supplierName) {
+      selectedSupplier = supplierName;
+      renderSupplierDetail(supplierName);
+      showPage("detail");
+    }
+
+    function renderSupplierDetail(supplierName) {
+      const supplierItems = getItemsForSupplier(supplierName);
+      const pendingItems = supplierItems.filter(item => hasPendingVariant(item));
+      const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
+      const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
+
+      detailSupplierName.textContent = supplierName || UNSET_SUPPLIER;
+      if (detailSupplierNote) detailSupplierNote.textContent = "";
+      detailSummary.innerHTML = "";
+
+      const stats = [
+        ["Model", supplierItems.length],
+        ["Belum Pcs", totalPcs],
+        ["Modal", formatRupiah(totalModal)]
+      ];
+
+      stats.forEach(([label, value]) => {
+        const box = document.createElement("div");
+        box.className = "detail-mini-stat";
+        const span = document.createElement("span");
+        span.textContent = label;
+        const strong = document.createElement("strong");
+        strong.textContent = value;
+        box.append(span, strong);
+        detailSummary.appendChild(box);
+      });
+
+      detailItemList.innerHTML = "";
+      if (!supplierItems.length) {
+        detailItemList.innerHTML = `<div class="empty">Barang untuk supplier ini sudah tidak ada bro.</div>`;
+        return;
+      }
+
+      const simpleList = document.createElement("div");
+      simpleList.className = "simple-detail";
+
+      supplierItems.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const row = document.createElement("div");
+        row.className = "simple-row";
+
+        const head = document.createElement("div");
+        head.className = "simple-product-head";
+        const headLabel = document.createElement("span");
+        headLabel.textContent = "Barang";
+        const headValue = document.createElement("strong");
+        headValue.textContent = item.name;
+        head.append(headLabel, headValue);
+        row.appendChild(head);
+
+        item.variants.forEach((variant, variantIndex) => {
+          const variantRow = document.createElement("div");
+          variantRow.className = "simple-variant-row" + (variant.done ? " variant-done" : "");
+
+          const checkWrap = document.createElement("div");
+          checkWrap.className = "variant-check-wrap";
+          const checkBtn = document.createElement("button");
+          checkBtn.className = "variant-check" + (variant.done ? " done" : "");
+          checkBtn.type = "button";
+          checkBtn.textContent = variant.done ? "✓" : "";
+          checkBtn.title = variant.done ? "Sudah dibeli" : "Belum dibeli";
+          checkBtn.addEventListener("click", () => toggleVariantDone(item, variantIndex));
+          checkWrap.appendChild(checkBtn);
+
+          const warna = document.createElement("div");
+          warna.className = "simple-cell";
+          const warnaLabel = document.createElement("span");
+          warnaLabel.textContent = "Warna";
+          const warnaValue = document.createElement("strong");
+          warnaValue.textContent = variant.colorName || "Tanpa warna";
+          warna.append(warnaLabel, warnaValue);
+
+          const jumlah = document.createElement("div");
+          jumlah.className = "simple-cell";
+          const jumlahLabel = document.createElement("span");
+          jumlahLabel.textContent = "Jumlah";
+          const jumlahValue = document.createElement("strong");
+          jumlahValue.textContent = `${variant.qty} pcs`;
+          jumlah.append(jumlahLabel, jumlahValue);
+
+          variantRow.append(checkWrap, warna, jumlah);
+          row.appendChild(variantRow);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "simple-actions";
+        actions.style.gridTemplateColumns = "1fr 1fr";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editItem(item));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "icon-btn danger";
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Hapus";
+        deleteBtn.addEventListener("click", () => deleteItem(item));
+
+        actions.append(editBtn, deleteBtn);
+        row.appendChild(actions);
+        simpleList.appendChild(row);
+      });
+
+      detailItemList.appendChild(simpleList);
+    }
+
+    function renderList() {
+      renderSupplierList();
+      if (selectedSupplier && pageDetail.classList.contains("active")) {
+        renderSupplierDetail(selectedSupplier);
+      }
+    }
+
+    async function refreshItems() {
+      items = (await getAllItems()).map(normalizeItem);
+      renderList();
+    }
+
+    function getFormItem() {
+      const now = new Date().toISOString();
+      const oldItem = items.find(item => item.id === editId.value);
+      const oldVariants = oldItem ? normalizeItem(oldItem).variants : [];
+      const variants = getFormVariants().map((variant, index) => ({
+        ...variant,
+        done: oldVariants[index] ? Boolean(oldVariants[index].done) : false
+      }));
+
+      return {
+        id: editId.value || makeId(),
+        name: safeText(nameInput.value),
+        supplierName: safeText(supplierInput.value),
+        kodiPrice: Math.max(0, parseRupiah(kodiPriceInput.value)),
+        variants,
+        unit: DEFAULT_UNIT,
+        priority: priorityInput.value,
+        note: safeText(noteInput.value),
+        done: variants.length ? variants.every(variant => variant.done) : false,
+        createdAt: oldItem ? oldItem.createdAt : now,
+        updatedAt: now
+      };
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const item = getFormItem();
+      if (!item.name) return alert("Nama barang wajib diisi bro.");
+      if (item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Jumlah warna minimal 1 bro.");
+      try {
+        const edited = Boolean(editId.value);
+        await saveItem(item);
+        await refreshItems();
+        resetForm();
+        showToast(edited ? "Barang diperbarui" : "Barang ditambahkan");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menyimpan data bro. Coba refresh lalu ulangi.");
+      }
+    });
+
+    resetBtn.addEventListener("click", resetForm);
+    searchInput.addEventListener("input", renderList);
+    statusFilter.addEventListener("change", renderList);
+    printBtn.addEventListener("click", () => {
+      if (!pageDetail.classList.contains("active")) {
+        alert("Buka detail supplier dulu bro, baru print.");
+        return;
+      }
+      window.print();
+    });
+
+    clearDoneBtn.addEventListener("click", async () => {
+      const doneVariantCount = items.reduce((sum, item) => sum + getDoneQty(item), 0);
+      if (!doneVariantCount) return alert("Belum ada warna yang selesai dibeli bro.");
+      const ok = confirm(`Hapus warna yang sudah dibeli? Total ${doneVariantCount} pcs akan dihapus dari list.`);
+      if (!ok) return;
+      try {
+        await clearDoneVariants();
+        await refreshItems();
+        showToast("Warna selesai dihapus");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menghapus barang selesai bro.");
+      }
+    });
+
+    async function init() {
+      try {
+        db = await openDB();
+        setVariantRows([{ colorName: "", qty: 1 }]);
+        updatePricePreview();
+        await refreshItems();
+      } catch (error) {
+        console.error(error);
+        supplierList.innerHTML = `
+          <div class="empty">
+            Maaf bro, IndexedDB tidak bisa dibuka di browser ini.<br />
+            Coba pakai Chrome Android atau browser modern lainnya.
+          </div>
+        `;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
