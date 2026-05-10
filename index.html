@@ -4006,8 +4006,7 @@
             supplier: getSupplierKey(item),
             name: item.name || "Tanpa nama",
             color: variant.colorName || "Tanpa warna",
-            qty: variant.qty,
-            note: item.note || ""
+            qty: variant.qty
           });
         });
       });
@@ -4034,50 +4033,36 @@
       return lines;
     }
 
-    function centerLine(text, width = 32) {
-      const clean = String(text).trim();
-      const left = Math.max(0, Math.floor((width - clean.length) / 2));
-      return " ".repeat(left) + clean;
-    }
-
     function makePrintText() {
       const rows = getPendingPrintRows();
       const lines = [];
-      const date = new Date().toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric"
-      });
-
-      lines.push(centerLine("LIST BELANJA HIJAB"));
-      lines.push(centerLine(date));
-      lines.push("================================");
 
       if (!rows.length) {
         lines.push("Semua barang sudah selesai.");
-        lines.push("================================");
-        lines.push("Total: 0 pcs");
         return lines.join("\n") + "\n\n\n";
       }
 
-      const groups = new Map();
+      const supplierGroups = new Map();
       rows.forEach(row => {
-        if (!groups.has(row.supplier)) groups.set(row.supplier, []);
-        groups.get(row.supplier).push(row);
+        if (!supplierGroups.has(row.supplier)) supplierGroups.set(row.supplier, new Map());
+        const productGroups = supplierGroups.get(row.supplier);
+        if (!productGroups.has(row.name)) productGroups.set(row.name, []);
+        productGroups.get(row.name).push(row);
       });
 
-      let totalPcs = 0;
-      [...groups.entries()].forEach(([supplier, supplierRows], groupIndex) => {
-        if (groupIndex > 0) lines.push("--------------------------------");
+      [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
+        if (supplierIndex > 0) lines.push("");
         padLine(supplier, 32).forEach(line => lines.push(line));
-        supplierRows.forEach((row, index) => {
-          totalPcs += Number(row.qty) || 0;
-          padLine(`${index + 1}. ${row.name}`, 32).forEach(line => lines.push(line));
-          padLine(`   ${row.color} - ${row.qty} pcs`, 32).forEach(line => lines.push(line));
-          if (row.note) padLine(`   Catatan: ${row.note}`, 32).forEach(line => lines.push(line));
+
+        [...productGroups.entries()].forEach(([productName, productRows], productIndex) => {
+          if (productIndex > 0) lines.push("");
+          padLine(productName, 32).forEach(line => lines.push(line));
+          productRows.forEach(row => {
+            padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
+          });
         });
       });
 
-      lines.push("================================");
-      lines.push(`Total pcs: ${totalPcs}`);
       lines.push("\n\n");
       return lines.join("\n");
     }
@@ -4085,17 +4070,17 @@
 
     function makePrintPayload() {
       return JSON.stringify({
-        title: "LIST BELANJA TOKO HIJAB",
+        title: "",
         printerName: PRINTER_NAME,
         paperMm: 80,
-        createdAt: new Date().toISOString(),
+        format: "supplier_barang_warna_pcs",
+        receiptText: makePrintText(),
         items: getPendingPrintRows().map(row => ({
           supplierName: row.supplier,
           name: row.name,
           colorName: row.color,
           qty: row.qty,
-          unit: "pcs",
-          note: row.note || ""
+          unit: "pcs"
         }))
       });
     }
