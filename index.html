@@ -4389,15 +4389,29 @@
       updatePrintPreview();
     }
 
-    function makePrintPayload() {
+    function makePrintPayloadObject() {
       const activeRows = getActivePrintRows();
-      return JSON.stringify({
+      const plainText = makePrintText();
+      const escPosText = makeEscPosPrintText();
+      const htmlText = makePrintHtml();
+
+      return {
         title: "",
         printerName: PRINTER_NAME,
         paperMm: 80,
-        format: "supplier_barang_warna_pcs_big_header_selectable",
-        receiptText: makeEscPosPrintText(),
-        plainReceiptText: makePrintText(),
+        format: "raw_preview_text_v2",
+        printMode: "raw_text",
+        forceUseReceiptText: true,
+        usePreviewTextOnly: true,
+        text: escPosText,
+        rawText: escPosText,
+        escPosText: escPosText,
+        receiptText: escPosText,
+        finalReceiptText: escPosText,
+        plainText: plainText,
+        plainReceiptText: plainText,
+        previewText: plainText,
+        receiptHtml: htmlText,
         receiptBlocks: makePrintBlocks(),
         selectedCount: activeRows.length,
         font: {
@@ -4407,18 +4421,34 @@
         },
         items: activeRows.map(row => ({
           supplierName: row.supplier,
+          supplier: row.supplier,
           name: row.name,
+          productName: row.name,
           colorName: row.color,
+          color: row.color,
           qty: row.qty,
           unit: "pcs",
+          lineText: `${row.color} = ${row.qty} pcs`,
           supplierTextSize: "large",
           nameTextSize: "large"
         }))
-      });
+      };
+    }
+
+    function makePrintPayload() {
+      return JSON.stringify(makePrintPayloadObject());
     }
 
     function isAndroidNativePrinterReady() {
-      return !!(window.AndroidPrinter && typeof window.AndroidPrinter.printShoppingList === "function");
+      if (!window.AndroidPrinter) return false;
+      return [
+        "printPreviewText",
+        "printReceiptText",
+        "printRawText",
+        "printEscPosText",
+        "printText",
+        "printShoppingList"
+      ].some(method => typeof window.AndroidPrinter[method] === "function");
     }
 
     function checkAndroidNativePrinter() {
@@ -4435,12 +4465,36 @@
         alert("Pilih minimal satu data yang mau dicetak bro.");
         return;
       }
-      if (isAndroidNativePrinterReady()) {
-        window.AndroidPrinter.printShoppingList(makePrintPayload());
-        updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME}`);
+
+      if (!isAndroidNativePrinterReady()) {
+        alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
         return;
       }
-      alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
+
+      const payload = makePrintPayloadObject();
+      const directMethods = [
+        "printPreviewText",
+        "printReceiptText",
+        "printRawText",
+        "printEscPosText"
+      ];
+
+      for (const method of directMethods) {
+        if (typeof window.AndroidPrinter[method] === "function") {
+          window.AndroidPrinter[method](payload.escPosText);
+          updatePrinterStatus(`Dikirim sesuai preview: ${PRINTER_NAME}`);
+          return;
+        }
+      }
+
+      if (typeof window.AndroidPrinter.printText === "function") {
+        window.AndroidPrinter.printText(payload.plainText);
+        updatePrinterStatus(`Dikirim sesuai preview: ${PRINTER_NAME}`);
+        return;
+      }
+
+      window.AndroidPrinter.printShoppingList(JSON.stringify(payload));
+      updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME} • pakai payload preview`);
     }
 
     function openPrintPreview() {
