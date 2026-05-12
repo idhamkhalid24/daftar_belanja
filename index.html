@@ -3090,16 +3090,29 @@
       return cleanNameValue(value).toLocaleLowerCase("id-ID");
     }
 
+    function casingScore(value) {
+      const clean = cleanNameValue(value);
+      const letters = clean.replace(/[^A-Za-zÀ-ÿ]/g, "");
+      if (!letters) return 0;
+      if (letters === letters.toLocaleUpperCase("id-ID")) return 3;
+      if (/[A-ZÀ-Ý]/.test(clean)) return 2;
+      return 1;
+    }
+
     function chooseBetterName(oldValue, newValue) {
       const oldClean = cleanNameValue(oldValue);
       const newClean = cleanNameValue(newValue);
       if (!oldClean) return newClean;
       if (!newClean) return oldClean;
 
-      const oldHasUpper = /[A-Z]/.test(oldClean);
-      const newHasUpper = /[A-Z]/.test(newClean);
-      if (!oldHasUpper && newHasUpper) return newClean;
-      if (newClean.length > oldClean.length && sameNameKey(newClean) === sameNameKey(oldClean)) return newClean;
+      const oldScore = casingScore(oldClean);
+      const newScore = casingScore(newClean);
+      if (newScore > oldScore) return newClean;
+      if (oldScore > newScore) return oldClean;
+
+      // Kalau key sama dan kualitas huruf sama, input terbaru menang.
+      // Contoh: simpan DASYA setelah Dasya => tampil DASYA, tapi tetap 1 data.
+      if (sameNameKey(newClean) === sameNameKey(oldClean)) return newClean;
       return oldClean;
     }
 
@@ -3119,8 +3132,16 @@
       return cleanSavedList((Array.isArray(values) ? values : []).filter(value => sameNameKey(value) !== targetKey));
     }
 
+    function removeHiddenMatches(hiddenValues, visibleValues) {
+      const visibleKeys = new Set(cleanSavedList(visibleValues).map(sameNameKey));
+      if (!visibleKeys.size) return cleanSavedList(hiddenValues);
+      return cleanSavedList((Array.isArray(hiddenValues) ? hiddenValues : []).filter(value => !visibleKeys.has(sameNameKey(value))));
+    }
+
     function upsertName(values, newValue) {
-      return cleanSavedList([...(Array.isArray(values) ? values : []), newValue]);
+      // Hapus dulu value lama yang key-nya sama, lalu masukkan value baru.
+      // Jadi dasya/Dasya/DASYA tidak jadi data dobel, tapi kapital terbaru tetap tersimpan.
+      return cleanSavedList([...withoutSameName(values, newValue), newValue]);
     }
 
     function getStoredSavedData() {
@@ -3162,13 +3183,19 @@
 
     function saveStoredSavedData(data) {
       const oldData = getStoredSavedData();
+      const newItemNames = cleanSavedList((data && data.itemNames) || []);
+      const newSuppliers = cleanSavedList((data && data.suppliers) || []);
+      const newColors = cleanSavedList((data && data.colors) || []);
+
       const nextData = {
-        itemNames: cleanSavedList([...(oldData.itemNames || []), ...((data && data.itemNames) || [])]),
-        suppliers: cleanSavedList([...(oldData.suppliers || []), ...((data && data.suppliers) || [])]),
-        colors: cleanSavedList([...(oldData.colors || []), ...((data && data.colors) || [])]),
-        hiddenItemNames: cleanSavedList(oldData.hiddenItemNames),
-        hiddenSuppliers: cleanSavedList(oldData.hiddenSuppliers),
-        hiddenColors: cleanSavedList(oldData.hiddenColors)
+        itemNames: cleanSavedList([...(oldData.itemNames || []), ...newItemNames]),
+        suppliers: cleanSavedList([...(oldData.suppliers || []), ...newSuppliers]),
+        colors: cleanSavedList([...(oldData.colors || []), ...newColors]),
+        // Kalau user pernah hapus "Dasya" dari saran, lalu dia input "DASYA" lagi,
+        // data itu harus muncul kembali dan tidak dianggap hidden.
+        hiddenItemNames: removeHiddenMatches(oldData.hiddenItemNames, newItemNames),
+        hiddenSuppliers: removeHiddenMatches(oldData.hiddenSuppliers, newSuppliers),
+        hiddenColors: removeHiddenMatches(oldData.hiddenColors, newColors)
       };
 
       return writeStoredSavedData(nextData);
@@ -3431,23 +3458,23 @@
 
     function getSavedData() {
       const stored = getStoredSavedData();
-      const itemNames = new Set(stored.itemNames);
-      const suppliers = new Set(stored.suppliers);
-      const colors = new Set(stored.colors);
+      const itemNames = [...stored.itemNames];
+      const suppliers = [...stored.suppliers];
+      const colors = [...stored.colors];
 
       items.forEach(rawItem => {
         const item = normalizeItem(rawItem);
-        if (item.name) itemNames.add(item.name);
-        if (item.supplierName) suppliers.add(item.supplierName);
+        if (item.name) itemNames.push(item.name);
+        if (item.supplierName) suppliers.push(item.supplierName);
         item.variants.forEach(variant => {
-          if (variant.colorName) colors.add(variant.colorName);
+          if (variant.colorName) colors.push(variant.colorName);
         });
       });
 
       return {
-        itemNames: visibleSavedList([...itemNames], stored.hiddenItemNames).sort((a, b) => a.localeCompare(b, "id-ID")),
-        suppliers: visibleSavedList([...suppliers], stored.hiddenSuppliers).sort((a, b) => a.localeCompare(b, "id-ID")),
-        colors: visibleSavedList([...colors], stored.hiddenColors).sort((a, b) => a.localeCompare(b, "id-ID"))
+        itemNames: visibleSavedList(itemNames, stored.hiddenItemNames).sort((a, b) => a.localeCompare(b, "id-ID")),
+        suppliers: visibleSavedList(suppliers, stored.hiddenSuppliers).sort((a, b) => a.localeCompare(b, "id-ID")),
+        colors: visibleSavedList(colors, stored.hiddenColors).sort((a, b) => a.localeCompare(b, "id-ID"))
       };
     }
 
@@ -5113,8 +5140,23 @@
       if (pageBudget && pageBudget.classList.contains("active")) renderBudgetPage(true);
     }
 
+    function syncMasterFromExistingItems() {
+      if (!Array.isArray(items) || !items.length) return;
+      const data = { itemNames: [], suppliers: [], colors: [] };
+      items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        if (item.name) data.itemNames.push(item.name);
+        if (item.supplierName) data.suppliers.push(item.supplierName);
+        item.variants.forEach(variant => {
+          if (variant.colorName) data.colors.push(variant.colorName);
+        });
+      });
+      saveStoredSavedData(data);
+    }
+
     async function refreshItems() {
       items = (await getAllItems()).map(normalizeItem);
+      syncMasterFromExistingItems();
       pruneSelectedVariantKeys();
       renderList();
     }
