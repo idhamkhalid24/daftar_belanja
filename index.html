@@ -1412,10 +1412,10 @@
     }
 
     .print-line.product {
-      font-size: 16px;
-      line-height: 1.25;
+      font-size: 14px;
+      line-height: 1.28;
       font-weight: 800;
-      margin-top: 5px;
+      margin-top: 4px;
     }
 
     .print-line.variant {
@@ -1520,6 +1520,155 @@
     .print-footer {
       display: grid;
       grid-template-columns: 0.8fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      background: var(--card-2);
+    }
+
+    /* =====================================================
+       MASTER DATA MANAGER
+    ===================================================== */
+    .master-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(15,5,12,0.5);
+      z-index: 1250;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .master-modal.show { display: flex; }
+
+    .master-dialog {
+      width: min(560px, 96vw);
+      max-height: 86vh;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .master-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-2);
+    }
+
+    .master-head h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .master-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .master-body {
+      overflow: auto;
+      padding: 12px;
+      display: grid;
+      gap: 12px;
+      background: var(--bg-2);
+    }
+
+    .master-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .master-section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--card-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .master-section-head strong {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .master-section-head span {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .master-list {
+      display: grid;
+      gap: 0;
+    }
+
+    .master-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 6px;
+      align-items: center;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .master-row:last-child { border-bottom: 0; }
+
+    .master-name {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .master-action {
+      border: 0;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      min-height: 32px;
+    }
+
+    .master-action.edit {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .master-action.delete {
+      background: var(--red-bg);
+      color: var(--red-text);
+    }
+
+    .master-empty {
+      padding: 13px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .master-footer {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 8px;
       padding: 12px;
       border-top: 1px solid var(--border);
@@ -2253,6 +2402,27 @@
         padding: 10px;
       }
 
+      .master-dialog {
+        width: 100%;
+        max-height: 88vh;
+        border-radius: var(--radius-md);
+      }
+
+      .master-head { padding: 11px; }
+      .master-head h3 { font-size: 14px; }
+      .master-head p { font-size: 10.5px; }
+      .master-body { padding: 9px; gap: 9px; }
+      .master-section-head { padding: 9px 10px; }
+      .master-section-head strong { font-size: 12px; }
+      .master-row {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 5px;
+        padding: 8px;
+      }
+      .master-name { font-size: 12px; }
+      .master-action { padding: 6px 8px; font-size: 10.5px; min-height: 30px; }
+      .master-footer { padding: 10px; }
+
       .list-card-header {
         gap: 10px;
         padding: 11px 11px 9px !important;
@@ -2416,6 +2586,7 @@
 
         <div class="home-actions">
           <button class="btn btn-green" type="button" id="goListBtn">Lihat List Belanja</button>
+          <button class="btn btn-light" type="button" id="manageMasterBtn">Edit / Hapus Data Tersimpan</button>
         </div>
       </section>
     </section>
@@ -2552,6 +2723,19 @@
     </div>
   </div>
 
+  <div class="master-modal" id="masterModal" role="dialog" aria-modal="true" aria-labelledby="masterModalTitle">
+    <div class="master-dialog">
+      <div class="master-head">
+        <h3 id="masterModalTitle">Edit / Hapus Data Tersimpan</h3>
+        <p>Atur nama barang, nama supplier, dan warna yang muncul di saran input.</p>
+      </div>
+      <div class="master-body" id="masterBody"></div>
+      <div class="master-footer">
+        <button class="btn btn-light" type="button" id="closeMasterBtn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* =====================================================
        DARK MODE TOGGLE (UI ONLY — tidak menyentuh logika)
@@ -2625,6 +2809,10 @@
     const itemNameSavedPanel = document.getElementById("itemNameSavedPanel");
     const supplierSavedPanel = document.getElementById("supplierSavedPanel");
     const colorSavedPanel = document.getElementById("colorSavedPanel");
+    const manageMasterBtn = document.getElementById("manageMasterBtn");
+    const masterModal = document.getElementById("masterModal");
+    const masterBody = document.getElementById("masterBody");
+    const closeMasterBtn = document.getElementById("closeMasterBtn");
     const savedToggleButtons = document.querySelectorAll("[data-saved-target]");
 
     const supplierList = document.getElementById("supplierList");
@@ -2837,20 +3025,25 @@
         return {
           itemNames: cleanSavedList(data.itemNames),
           suppliers: cleanSavedList(data.suppliers),
-          colors: cleanSavedList(data.colors)
+          colors: cleanSavedList(data.colors),
+          hiddenItemNames: cleanSavedList(data.hiddenItemNames),
+          hiddenSuppliers: cleanSavedList(data.hiddenSuppliers),
+          hiddenColors: cleanSavedList(data.hiddenColors)
         };
       } catch (error) {
         console.warn("Gagal baca data master saran", error);
-        return { itemNames: [], suppliers: [], colors: [] };
+        return { itemNames: [], suppliers: [], colors: [], hiddenItemNames: [], hiddenSuppliers: [], hiddenColors: [] };
       }
     }
 
-    function saveStoredSavedData(data) {
-      const oldData = getStoredSavedData();
+    function writeStoredSavedData(data) {
       const nextData = {
-        itemNames: cleanSavedList([...(oldData.itemNames || []), ...((data && data.itemNames) || [])]),
-        suppliers: cleanSavedList([...(oldData.suppliers || []), ...((data && data.suppliers) || [])]),
-        colors: cleanSavedList([...(oldData.colors || []), ...((data && data.colors) || [])])
+        itemNames: cleanSavedList((data && data.itemNames) || []),
+        suppliers: cleanSavedList((data && data.suppliers) || []),
+        colors: cleanSavedList((data && data.colors) || []),
+        hiddenItemNames: cleanSavedList((data && data.hiddenItemNames) || []),
+        hiddenSuppliers: cleanSavedList((data && data.hiddenSuppliers) || []),
+        hiddenColors: cleanSavedList((data && data.hiddenColors) || [])
       };
 
       try {
@@ -2860,6 +3053,25 @@
       }
 
       return nextData;
+    }
+
+    function saveStoredSavedData(data) {
+      const oldData = getStoredSavedData();
+      const nextData = {
+        itemNames: cleanSavedList([...(oldData.itemNames || []), ...((data && data.itemNames) || [])]),
+        suppliers: cleanSavedList([...(oldData.suppliers || []), ...((data && data.suppliers) || [])]),
+        colors: cleanSavedList([...(oldData.colors || []), ...((data && data.colors) || [])]),
+        hiddenItemNames: cleanSavedList(oldData.hiddenItemNames),
+        hiddenSuppliers: cleanSavedList(oldData.hiddenSuppliers),
+        hiddenColors: cleanSavedList(oldData.hiddenColors)
+      };
+
+      return writeStoredSavedData(nextData);
+    }
+
+    function visibleSavedList(values, hiddenValues) {
+      const hidden = new Set(cleanSavedList(hiddenValues).map(value => value.toLowerCase()));
+      return cleanSavedList(values).filter(value => !hidden.has(value.toLowerCase()));
     }
 
     function rememberSavedFromItem(rawItem) {
@@ -3127,9 +3339,9 @@
       });
 
       return {
-        itemNames: [...itemNames].sort((a, b) => a.localeCompare(b, "id-ID")),
-        suppliers: [...suppliers].sort((a, b) => a.localeCompare(b, "id-ID")),
-        colors: [...colors].sort((a, b) => a.localeCompare(b, "id-ID"))
+        itemNames: visibleSavedList([...itemNames], stored.hiddenItemNames).sort((a, b) => a.localeCompare(b, "id-ID")),
+        suppliers: visibleSavedList([...suppliers], stored.hiddenSuppliers).sort((a, b) => a.localeCompare(b, "id-ID")),
+        colors: visibleSavedList([...colors], stored.hiddenColors).sort((a, b) => a.localeCompare(b, "id-ID"))
       };
     }
 
@@ -3214,6 +3426,114 @@
       });
 
       renderSavedPanels();
+    }
+
+
+    function getMasterConfig(type) {
+      if (type === "itemNames") return { label: "Nama Barang", listKey: "itemNames", hiddenKey: "hiddenItemNames" };
+      if (type === "suppliers") return { label: "Nama Supplier", listKey: "suppliers", hiddenKey: "hiddenSuppliers" };
+      return { label: "Warna", listKey: "colors", hiddenKey: "hiddenColors" };
+    }
+
+    function syncMasterUi() {
+      updateSuggestions();
+      renderMasterManager();
+    }
+
+    function editMasterValue(type, oldValue) {
+      const config = getMasterConfig(type);
+      const nextValue = safeText(prompt(`Edit ${config.label}:`, oldValue));
+      if (!nextValue || nextValue === oldValue) return;
+
+      const data = getStoredSavedData();
+      data[config.listKey] = cleanSavedList([...(data[config.listKey] || []).filter(value => value !== oldValue), nextValue]);
+      data[config.hiddenKey] = cleanSavedList([...(data[config.hiddenKey] || []).filter(value => value !== nextValue), oldValue]);
+      writeStoredSavedData(data);
+      syncMasterUi();
+      showToast(`${config.label} diperbarui`);
+    }
+
+    function deleteMasterValue(type, value) {
+      const config = getMasterConfig(type);
+      if (!confirm(`Hapus ${config.label} ini dari saran input?\n\n${value}`)) return;
+
+      const data = getStoredSavedData();
+      data[config.listKey] = cleanSavedList((data[config.listKey] || []).filter(item => item !== value));
+      data[config.hiddenKey] = cleanSavedList([...(data[config.hiddenKey] || []), value]);
+      writeStoredSavedData(data);
+      syncMasterUi();
+      showToast(`${config.label} dihapus dari saran`);
+    }
+
+    function renderMasterSection(type, values) {
+      const config = getMasterConfig(type);
+      const section = document.createElement("section");
+      section.className = "master-section";
+
+      const head = document.createElement("div");
+      head.className = "master-section-head";
+      const title = document.createElement("strong");
+      title.textContent = config.label;
+      const count = document.createElement("span");
+      count.textContent = `${values.length} data`;
+      head.append(title, count);
+
+      const list = document.createElement("div");
+      list.className = "master-list";
+
+      if (!values.length) {
+        const empty = document.createElement("div");
+        empty.className = "master-empty";
+        empty.textContent = `Belum ada ${config.label.toLowerCase()} tersimpan.`;
+        list.appendChild(empty);
+      } else {
+        values.forEach(value => {
+          const row = document.createElement("div");
+          row.className = "master-row";
+
+          const name = document.createElement("div");
+          name.className = "master-name";
+          name.textContent = value;
+
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "master-action edit";
+          edit.textContent = "Edit";
+          edit.addEventListener("click", () => editMasterValue(type, value));
+
+          const del = document.createElement("button");
+          del.type = "button";
+          del.className = "master-action delete";
+          del.textContent = "Hapus";
+          del.addEventListener("click", () => deleteMasterValue(type, value));
+
+          row.append(name, edit, del);
+          list.appendChild(row);
+        });
+      }
+
+      section.append(head, list);
+      return section;
+    }
+
+    function renderMasterManager() {
+      if (!masterBody) return;
+      const saved = getSavedData();
+      masterBody.innerHTML = "";
+      masterBody.append(
+        renderMasterSection("itemNames", saved.itemNames),
+        renderMasterSection("suppliers", saved.suppliers),
+        renderMasterSection("colors", saved.colors)
+      );
+    }
+
+    function openMasterManager() {
+      renderMasterManager();
+      if (masterModal) masterModal.classList.add("show");
+    }
+
+    function closeMasterManager() {
+      if (masterModal) masterModal.classList.remove("show");
     }
 
     document.addEventListener("click", event => {
@@ -4274,7 +4594,7 @@
       const { rows, supplierGroups } = getPrintGroups();
       const normal = "\x1b\x21\x00";
       const bigBold = "\x1b\x21\x38";
-      const productBold = "\x1b\x21\x18";
+      const productBold = "\x1b\x21\x08";
       const lines = [normal];
 
       if (!rows.length) {
@@ -4417,7 +4737,7 @@
         selectedCount: activeRows.length,
         font: {
           supplier: { size: "large", bold: true, escpos: "double_width_height_bold" },
-          product: { size: "medium", bold: true, escpos: "double_height_bold" },
+          product: { size: "small", bold: true, escpos: "bold_normal" },
           variant: { size: "normal", bold: false }
         },
         items: activeRows.map(row => ({
@@ -4431,7 +4751,7 @@
           unit: "pcs",
           lineText: `${row.color} = ${row.qty} pcs`,
           supplierTextSize: "large",
-          nameTextSize: "medium"
+          nameTextSize: "small"
         }))
       };
     }
@@ -4716,6 +5036,12 @@
       renderBudgetPage(false);
     });
 
+
+    if (manageMasterBtn) manageMasterBtn.addEventListener("click", openMasterManager);
+    if (closeMasterBtn) closeMasterBtn.addEventListener("click", closeMasterManager);
+    if (masterModal) masterModal.addEventListener("click", event => {
+      if (event.target === masterModal) closeMasterManager();
+    });
 
     if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
     if (closePrintBtn) closePrintBtn.addEventListener("click", closePrintPreview);
