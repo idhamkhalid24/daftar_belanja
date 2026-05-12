@@ -3082,9 +3082,45 @@
       return String(value || "").replace(/[<>]/g, "").trim();
     }
 
+    function cleanNameValue(value) {
+      return safeText(value).replace(/\s+/g, " ").trim();
+    }
+
+    function sameNameKey(value) {
+      return cleanNameValue(value).toLocaleLowerCase("id-ID");
+    }
+
+    function chooseBetterName(oldValue, newValue) {
+      const oldClean = cleanNameValue(oldValue);
+      const newClean = cleanNameValue(newValue);
+      if (!oldClean) return newClean;
+      if (!newClean) return oldClean;
+
+      const oldHasUpper = /[A-Z]/.test(oldClean);
+      const newHasUpper = /[A-Z]/.test(newClean);
+      if (!oldHasUpper && newHasUpper) return newClean;
+      if (newClean.length > oldClean.length && sameNameKey(newClean) === sameNameKey(oldClean)) return newClean;
+      return oldClean;
+    }
+
     function cleanSavedList(values) {
-      return [...new Set((Array.isArray(values) ? values : []).map(safeText).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b, "id-ID"));
+      const map = new Map();
+      (Array.isArray(values) ? values : []).forEach(value => {
+        const clean = cleanNameValue(value);
+        if (!clean) return;
+        const key = sameNameKey(clean);
+        map.set(key, map.has(key) ? chooseBetterName(map.get(key), clean) : clean);
+      });
+      return [...map.values()].sort((a, b) => a.localeCompare(b, "id-ID"));
+    }
+
+    function withoutSameName(values, targetValue) {
+      const targetKey = sameNameKey(targetValue);
+      return cleanSavedList((Array.isArray(values) ? values : []).filter(value => sameNameKey(value) !== targetKey));
+    }
+
+    function upsertName(values, newValue) {
+      return cleanSavedList([...(Array.isArray(values) ? values : []), newValue]);
     }
 
     function getStoredSavedData() {
@@ -3139,8 +3175,8 @@
     }
 
     function visibleSavedList(values, hiddenValues) {
-      const hidden = new Set(cleanSavedList(hiddenValues).map(value => value.toLowerCase()));
-      return cleanSavedList(values).filter(value => !hidden.has(value.toLowerCase()));
+      const hidden = new Set(cleanSavedList(hiddenValues).map(sameNameKey));
+      return cleanSavedList(values).filter(value => !hidden.has(sameNameKey(value)));
     }
 
     function rememberSavedFromItem(rawItem) {
@@ -3301,6 +3337,7 @@
     }
 
     function getSupplierKey(item) { return normalizeItem(item).supplierName || UNSET_SUPPLIER; }
+    function getSupplierMatchKey(item) { return sameNameKey(getSupplierKey(item)); }
     function getTotalQty(item) { return normalizeItem(item).variants.reduce((sum, variant) => sum + variant.qty, 0); }
     function getPendingQty(item) { return normalizeItem(item).variants.filter(variant => !variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
     function getDoneQty(item) { return normalizeItem(item).variants.filter(variant => variant.done).reduce((sum, variant) => sum + variant.qty, 0); }
@@ -3415,9 +3452,9 @@
     }
 
     function prefixFilter(values, keyword) {
-      const clean = safeText(keyword).toLowerCase();
+      const clean = sameNameKey(keyword);
       if (!clean) return values;
-      return values.filter(value => value.toLowerCase().startsWith(clean));
+      return values.filter(value => sameNameKey(value).startsWith(clean));
     }
 
     function fillSavedPanel(panel, values, onClick, emptyText) {
@@ -3511,12 +3548,12 @@
 
     function editMasterValue(type, oldValue) {
       const config = getMasterConfig(type);
-      const nextValue = safeText(prompt(`Edit ${config.label}:`, oldValue));
+      const nextValue = cleanNameValue(prompt(`Edit ${config.label}:`, oldValue));
       if (!nextValue || nextValue === oldValue) return;
 
       const data = getStoredSavedData();
-      data[config.listKey] = cleanSavedList([...(data[config.listKey] || []).filter(value => value !== oldValue), nextValue]);
-      data[config.hiddenKey] = cleanSavedList([...(data[config.hiddenKey] || []).filter(value => value !== nextValue), oldValue]);
+      data[config.listKey] = upsertName(withoutSameName(data[config.listKey] || [], oldValue), nextValue);
+      data[config.hiddenKey] = withoutSameName(data[config.hiddenKey] || [], nextValue);
       writeStoredSavedData(data);
       syncMasterUi();
       showToast(`${config.label} diperbarui`);
@@ -3527,8 +3564,8 @@
       if (!confirm(`Hapus ${config.label} ini dari saran input?\n\n${value}`)) return;
 
       const data = getStoredSavedData();
-      data[config.listKey] = cleanSavedList((data[config.listKey] || []).filter(item => item !== value));
-      data[config.hiddenKey] = cleanSavedList([...(data[config.hiddenKey] || []), value]);
+      data[config.listKey] = withoutSameName(data[config.listKey] || [], value);
+      data[config.hiddenKey] = upsertName(data[config.hiddenKey] || [], value);
       writeStoredSavedData(data);
       syncMasterUi();
       showToast(`${config.label} dihapus dari saran`);
@@ -4053,10 +4090,15 @@
       getFilteredItems().forEach(rawItem => {
         const item = normalizeItem(rawItem);
         const supplier = getSupplierKey(item);
-        if (!groups.has(supplier)) groups.set(supplier, []);
-        groups.get(supplier).push(item);
+        const key = getSupplierMatchKey(item);
+        if (!groups.has(key)) groups.set(key, { supplierName: supplier, items: [] });
+        const group = groups.get(key);
+        group.supplierName = chooseBetterName(group.supplierName, supplier);
+        group.items.push(item);
       });
-      return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], "id-ID"));
+      return [...groups.values()]
+        .map(group => [group.supplierName, group.items])
+        .sort((a, b) => a[0].localeCompare(b[0], "id-ID"));
     }
 
     function renderSupplierList() {
@@ -4103,7 +4145,8 @@
     }
 
     function getItemsForSupplier(supplierName) {
-      return sortItems(items).filter(item => getSupplierKey(item) === supplierName);
+      const targetKey = sameNameKey(supplierName || UNSET_SUPPLIER);
+      return sortItems(items).filter(item => sameNameKey(getSupplierKey(item)) === targetKey);
     }
 
     function openSupplierDetail(supplierName) {
@@ -4601,16 +4644,28 @@
       const supplierGroups = new Map();
 
       rows.forEach(row => {
-        if (!supplierGroups.has(row.supplier)) supplierGroups.set(row.supplier, new Map());
-        const productGroups = supplierGroups.get(row.supplier);
-        const productKey = `${row.itemId}::${row.name}`;
-        if (!productGroups.has(productKey)) {
-          productGroups.set(productKey, { productName: row.name, rows: [] });
+        const supplierKey = sameNameKey(row.supplier || UNSET_SUPPLIER);
+        if (!supplierGroups.has(supplierKey)) {
+          supplierGroups.set(supplierKey, { supplierName: row.supplier || UNSET_SUPPLIER, products: new Map() });
         }
-        productGroups.get(productKey).rows.push(row);
+        const supplierGroup = supplierGroups.get(supplierKey);
+        supplierGroup.supplierName = chooseBetterName(supplierGroup.supplierName, row.supplier || UNSET_SUPPLIER);
+
+        const productKey = `${row.itemId}::${sameNameKey(row.name || "Barang")}`;
+        if (!supplierGroup.products.has(productKey)) {
+          supplierGroup.products.set(productKey, { productName: row.name, rows: [] });
+        }
+        const productGroup = supplierGroup.products.get(productKey);
+        productGroup.productName = chooseBetterName(productGroup.productName, row.name || "Barang");
+        productGroup.rows.push(row);
       });
 
-      return { rows, supplierGroups };
+      const printableGroups = new Map();
+      [...supplierGroups.values()]
+        .sort((a, b) => a.supplierName.localeCompare(b.supplierName, "id-ID"))
+        .forEach(group => printableGroups.set(group.supplierName, group.products));
+
+      return { rows, supplierGroups: printableGroups };
     }
 
     const PRINT_LINE_WIDTH = 48;
