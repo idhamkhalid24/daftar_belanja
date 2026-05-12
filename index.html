@@ -1396,6 +1396,127 @@
       word-break: break-word;
     }
 
+    .print-line {
+      display: block;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .print-line.supplier {
+      font-size: 19px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-top: 4px;
+    }
+
+    .print-line.product {
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 800;
+      margin-top: 5px;
+    }
+
+    .print-line.variant {
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 600;
+      padding-left: 2px;
+    }
+
+    .print-line.gap {
+      height: 10px;
+    }
+
+    .print-select-box {
+      display: grid;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .print-select-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .print-select-head strong {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .print-select-info {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .print-choice-list {
+      display: grid;
+      gap: 5px;
+      max-height: 170px;
+      overflow: auto;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card-2);
+    }
+
+    .print-choice-row {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      align-items: start;
+      gap: 7px;
+      margin: 0;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      cursor: pointer;
+    }
+
+    .print-choice-row input {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      margin: 1px 0 0;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .print-choice-main {
+      min-width: 0;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .print-choice-main span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .print-choice-empty {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px;
+      text-align: center;
+    }
+
     .print-footer {
       display: grid;
       grid-template-columns: 0.8fr 1fr 1fr;
@@ -2120,6 +2241,12 @@
       .print-head p { font-size: 10.5px; }
       .print-preview { padding: 11px; font-size: 11px; }
 
+      .print-select-box { padding: 9px 10px; gap: 7px; }
+      .print-choice-list { max-height: 150px; padding: 5px; }
+      .print-choice-row { padding: 7px 8px; gap: 6px; }
+      .print-choice-main { font-size: 11px; }
+      .print-choice-main span { font-size: 9.5px; }
+
       .print-footer {
         grid-template-columns: 1fr;
         gap: 7px;
@@ -2408,7 +2535,15 @@
         <h3 id="printModalTitle">Preview List Belanja</h3>
         <p id="printerStatus">Printer Android: RPP02N-FF57</p>
       </div>
-      <pre class="print-preview" id="printPreviewText"></pre>
+      <div class="print-select-box" id="printSelectBox">
+        <div class="print-select-head">
+          <strong>Pilih yang mau dicetak</strong>
+          <button class="small-btn" type="button" id="printToggleAllBtn">Batal Semua</button>
+        </div>
+        <div class="print-select-info" id="printSelectedInfo">Default: cetak semua.</div>
+        <div class="print-choice-list" id="printChoiceList"></div>
+      </div>
+      <div class="print-preview" id="printPreviewText"></div>
       <div class="print-footer">
         <button class="btn btn-light" type="button" id="closePrintBtn">Tutup</button>
         <button class="btn btn-green" type="button" id="selectPrinterBtn">Cek Printer</button>
@@ -2515,6 +2650,10 @@
     const printModal = document.getElementById("printModal");
     const printPreviewText = document.getElementById("printPreviewText");
     const printerStatus = document.getElementById("printerStatus");
+    const printSelectBox = document.getElementById("printSelectBox");
+    const printChoiceList = document.getElementById("printChoiceList");
+    const printToggleAllBtn = document.getElementById("printToggleAllBtn");
+    const printSelectedInfo = document.getElementById("printSelectedInfo");
     const closePrintBtn = document.getElementById("closePrintBtn");
     const selectPrinterBtn = document.getElementById("selectPrinterBtn");
     const sendPrintBtn = document.getElementById("sendPrintBtn");
@@ -2531,6 +2670,8 @@
     let activeColorInput = null;
     let currentPageName = "home";
     let selectedVariantKeys = new Set();
+    let printSelectedVariantKeys = new Set();
+    let printUseSelection = false;
     let bluetoothDevice = null;
     let printerCharacteristic = null;
 
@@ -3996,22 +4137,41 @@
 
 
 
-    function getPendingPrintRows() {
+    function getPendingPrintRows(options = {}) {
+      const selectedKeys = options && options.selectedKeys instanceof Set ? options.selectedKeys : null;
       const rows = [];
       sortItems(items).forEach(rawItem => {
         const item = normalizeItem(rawItem);
-        item.variants.forEach(variant => {
+        item.variants.forEach((variant, variantIndex) => {
           if (variant.done) return;
+          const key = getVariantSelectionKey(item, variantIndex);
+          if (selectedKeys && !selectedKeys.has(key)) return;
           rows.push({
+            key,
+            itemId: item.id,
+            variantIndex,
             supplier: getSupplierKey(item),
             name: item.name || "Tanpa nama",
             color: variant.colorName || "Tanpa warna",
-            qty: variant.qty,
-            note: item.note || ""
+            qty: variant.qty
           });
         });
       });
       return rows;
+    }
+
+    function getActivePrintRows() {
+      return getPendingPrintRows(printUseSelection ? { selectedKeys: printSelectedVariantKeys } : {});
+    }
+
+    function getEmptyPrintMessage() {
+      return getPendingPrintRows().length ? "Belum ada data dipilih." : "Semua barang sudah selesai.";
+    }
+
+    function initPrintSelection() {
+      const allRows = getPendingPrintRows();
+      printSelectedVariantKeys = new Set(allRows.map(row => row.key));
+      printUseSelection = true;
     }
 
     function padLine(text = "", width = 32) {
@@ -4034,74 +4194,261 @@
       return lines;
     }
 
-    function centerLine(text, width = 32) {
-      const clean = String(text).trim();
-      const left = Math.max(0, Math.floor((width - clean.length) / 2));
-      return " ".repeat(left) + clean;
+    function getPrintGroups() {
+      const rows = getActivePrintRows();
+      const supplierGroups = new Map();
+
+      rows.forEach(row => {
+        if (!supplierGroups.has(row.supplier)) supplierGroups.set(row.supplier, new Map());
+        const productGroups = supplierGroups.get(row.supplier);
+        const productKey = `${row.itemId}::${row.name}`;
+        if (!productGroups.has(productKey)) {
+          productGroups.set(productKey, { productName: row.name, rows: [] });
+        }
+        productGroups.get(productKey).rows.push(row);
+      });
+
+      return { rows, supplierGroups };
     }
 
     function makePrintText() {
-      const rows = getPendingPrintRows();
+      const { rows, supplierGroups } = getPrintGroups();
       const lines = [];
-      const date = new Date().toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric"
-      });
-
-      lines.push(centerLine("LIST BELANJA HIJAB"));
-      lines.push(centerLine(date));
-      lines.push("================================");
 
       if (!rows.length) {
-        lines.push("Semua barang sudah selesai.");
-        lines.push("================================");
-        lines.push("Total: 0 pcs");
+        lines.push(getEmptyPrintMessage());
         return lines.join("\n") + "\n\n\n";
       }
 
-      const groups = new Map();
-      rows.forEach(row => {
-        if (!groups.has(row.supplier)) groups.set(row.supplier, []);
-        groups.get(row.supplier).push(row);
-      });
-
-      let totalPcs = 0;
-      [...groups.entries()].forEach(([supplier, supplierRows], groupIndex) => {
-        if (groupIndex > 0) lines.push("--------------------------------");
+      [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
+        if (supplierIndex > 0) lines.push("");
         padLine(supplier, 32).forEach(line => lines.push(line));
-        supplierRows.forEach((row, index) => {
-          totalPcs += Number(row.qty) || 0;
-          padLine(`${index + 1}. ${row.name}`, 32).forEach(line => lines.push(line));
-          padLine(`   ${row.color} - ${row.qty} pcs`, 32).forEach(line => lines.push(line));
-          if (row.note) padLine(`   Catatan: ${row.note}`, 32).forEach(line => lines.push(line));
+
+        [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
+          if (productIndex > 0) lines.push("");
+          padLine(productName, 32).forEach(line => lines.push(line));
+          productRows.forEach(row => {
+            padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
+          });
         });
       });
 
-      lines.push("================================");
-      lines.push(`Total pcs: ${totalPcs}`);
       lines.push("\n\n");
       return lines.join("\n");
     }
 
+    function escapePrintHtml(value = "") {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
 
-    function makePrintPayload() {
-      return JSON.stringify({
-        title: "LIST BELANJA TOKO HIJAB",
-        printerName: PRINTER_NAME,
-        paperMm: 80,
-        createdAt: new Date().toISOString(),
-        items: getPendingPrintRows().map(row => ({
-          supplierName: row.supplier,
-          name: row.name,
-          colorName: row.color,
-          qty: row.qty,
-          unit: "pcs",
-          note: row.note || ""
-        }))
+    function makePrintHtml() {
+      const { rows, supplierGroups } = getPrintGroups();
+      const blocks = [];
+
+      if (!rows.length) {
+        return `<span class="print-line variant">${escapePrintHtml(getEmptyPrintMessage())}</span>`;
+      }
+
+      [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
+        if (supplierIndex > 0) blocks.push('<span class="print-line gap"></span>');
+        blocks.push(`<span class="print-line supplier">${escapePrintHtml(supplier)}</span>`);
+
+        [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
+          if (productIndex > 0) blocks.push('<span class="print-line gap"></span>');
+          blocks.push(`<span class="print-line product">${escapePrintHtml(productName)}</span>`);
+          productRows.forEach(row => {
+            blocks.push(`<span class="print-line variant">${escapePrintHtml(`${row.color} = ${row.qty} pcs`)}</span>`);
+          });
+        });
+      });
+
+      return blocks.join("");
+    }
+
+    function makeEscPosPrintText() {
+      const { rows, supplierGroups } = getPrintGroups();
+      const normal = "\x1b\x21\x00";
+      const bigBold = "\x1b\x21\x38";
+      const lines = [normal];
+
+      if (!rows.length) {
+        lines.push(getEmptyPrintMessage());
+        lines.push("\n\n\n");
+        return lines.join("\n");
+      }
+
+      [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
+        if (supplierIndex > 0) lines.push("");
+        padLine(supplier, 16).forEach(line => lines.push(bigBold + line + normal));
+
+        [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
+          if (productIndex > 0) lines.push("");
+          padLine(productName, 16).forEach(line => lines.push(bigBold + line + normal));
+          productRows.forEach(row => {
+            padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
+          });
+        });
+      });
+
+      lines.push(normal + "\n\n\n");
+      return lines.join("\n");
+    }
+
+    function makePrintBlocks() {
+      const { rows, supplierGroups } = getPrintGroups();
+      const blocks = [];
+      if (!rows.length) return [{ type: "text", text: getEmptyPrintMessage(), size: "normal", bold: false }];
+
+      [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
+        if (supplierIndex > 0) blocks.push({ type: "gap" });
+        blocks.push({ type: "supplier", text: supplier, size: "large", bold: true });
+
+        [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
+          if (productIndex > 0) blocks.push({ type: "gap" });
+          blocks.push({ type: "product", text: productName, size: "large", bold: true });
+          productRows.forEach(row => {
+            blocks.push({ type: "variant", text: `${row.color} = ${row.qty} pcs`, size: "normal", bold: false });
+          });
+        });
+      });
+      return blocks;
+    }
+
+    function updatePrintPreview() {
+      if (printPreviewText) printPreviewText.innerHTML = makePrintHtml();
+    }
+
+    function renderPrintSelector() {
+      const allRows = getPendingPrintRows();
+      const selectedCount = allRows.filter(row => printSelectedVariantKeys.has(row.key)).length;
+      const allSelected = allRows.length > 0 && selectedCount === allRows.length;
+
+      if (printSelectedInfo) {
+        printSelectedInfo.textContent = allRows.length
+          ? `Dipilih ${selectedCount} dari ${allRows.length} data. Default: cetak semua.`
+          : "Tidak ada barang pending untuk dicetak.";
+      }
+
+      if (printToggleAllBtn) {
+        printToggleAllBtn.textContent = allSelected ? "Batal Semua" : "Pilih Semua";
+        printToggleAllBtn.disabled = !allRows.length;
+      }
+
+      if (!printChoiceList) return;
+      printChoiceList.innerHTML = "";
+
+      if (!allRows.length) {
+        printChoiceList.innerHTML = '<div class="print-choice-empty">Semua barang sudah selesai.</div>';
+        return;
+      }
+
+      allRows.forEach(row => {
+        const label = document.createElement("label");
+        label.className = "print-choice-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = printSelectedVariantKeys.has(row.key);
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            printSelectedVariantKeys.add(row.key);
+          } else {
+            printSelectedVariantKeys.delete(row.key);
+          }
+          renderPrintSelector();
+          updatePrintPreview();
+        });
+
+        const text = document.createElement("div");
+        text.className = "print-choice-main";
+        text.textContent = `${row.name} • ${row.color} = ${row.qty} pcs`;
+        const meta = document.createElement("span");
+        meta.textContent = row.supplier;
+        text.appendChild(meta);
+
+        label.append(checkbox, text);
+        printChoiceList.appendChild(label);
       });
     }
 
+    function toggleAllPrintSelection() {
+      const allRows = getPendingPrintRows();
+      if (!allRows.length) return;
+      const selectedCount = allRows.filter(row => printSelectedVariantKeys.has(row.key)).length;
+      if (selectedCount === allRows.length) {
+        printSelectedVariantKeys.clear();
+      } else {
+        printSelectedVariantKeys = new Set(allRows.map(row => row.key));
+      }
+      renderPrintSelector();
+      updatePrintPreview();
+    }
+
+    function makePrintPayloadObject() {
+      const activeRows = getActivePrintRows();
+      const plainText = makePrintText();
+      const escPosText = makeEscPosPrintText();
+      const htmlText = makePrintHtml();
+
+      return {
+        title: "",
+        printerName: PRINTER_NAME,
+        paperMm: 80,
+        format: "raw_preview_text_v2",
+        printMode: "raw_text",
+        forceUseReceiptText: true,
+        usePreviewTextOnly: true,
+        text: escPosText,
+        rawText: escPosText,
+        escPosText: escPosText,
+        receiptText: escPosText,
+        finalReceiptText: escPosText,
+        plainText: plainText,
+        plainReceiptText: plainText,
+        previewText: plainText,
+        receiptHtml: htmlText,
+        receiptBlocks: makePrintBlocks(),
+        selectedCount: activeRows.length,
+        font: {
+          supplier: { size: "large", bold: true, escpos: "double_width_height_bold" },
+          product: { size: "large", bold: true, escpos: "double_width_height_bold" },
+          variant: { size: "normal", bold: false }
+        },
+        items: activeRows.map(row => ({
+          supplierName: row.supplier,
+          supplier: row.supplier,
+          name: row.name,
+          productName: row.name,
+          colorName: row.color,
+          color: row.color,
+          qty: row.qty,
+          unit: "pcs",
+          lineText: `${row.color} = ${row.qty} pcs`,
+          supplierTextSize: "large",
+          nameTextSize: "large"
+        }))
+      };
+    }
+
+    function makePrintPayload() {
+      return JSON.stringify(makePrintPayloadObject());
+    }
+
     function isAndroidNativePrinterReady() {
-      return !!(window.AndroidPrinter && typeof window.AndroidPrinter.printShoppingList === "function");
+      if (!window.AndroidPrinter) return false;
+      return [
+        "printPreviewText",
+        "printReceiptText",
+        "printRawText",
+        "printEscPosText",
+        "printText",
+        "printShoppingList"
+      ].some(method => typeof window.AndroidPrinter[method] === "function");
     }
 
     function checkAndroidNativePrinter() {
@@ -4114,23 +4461,53 @@
     }
 
     function sendNativePrint() {
-      if (isAndroidNativePrinterReady()) {
-        window.AndroidPrinter.printShoppingList(makePrintPayload());
-        updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME}`);
+      if (printUseSelection && getPendingPrintRows().length && !getActivePrintRows().length) {
+        alert("Pilih minimal satu data yang mau dicetak bro.");
         return;
       }
-      alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
+
+      if (!isAndroidNativePrinterReady()) {
+        alert("Printer native belum siap bro. Jalankan lewat APK Android Studio supaya Bluetooth dicetak dari kode Android.");
+        return;
+      }
+
+      const payload = makePrintPayloadObject();
+      const directMethods = [
+        "printPreviewText",
+        "printReceiptText",
+        "printRawText",
+        "printEscPosText"
+      ];
+
+      for (const method of directMethods) {
+        if (typeof window.AndroidPrinter[method] === "function") {
+          window.AndroidPrinter[method](payload.escPosText);
+          updatePrinterStatus(`Dikirim sesuai preview: ${PRINTER_NAME}`);
+          return;
+        }
+      }
+
+      if (typeof window.AndroidPrinter.printText === "function") {
+        window.AndroidPrinter.printText(payload.plainText);
+        updatePrinterStatus(`Dikirim sesuai preview: ${PRINTER_NAME}`);
+        return;
+      }
+
+      window.AndroidPrinter.printShoppingList(JSON.stringify(payload));
+      updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME} • pakai payload preview`);
     }
 
     function openPrintPreview() {
-      const text = makePrintText();
-      printPreviewText.textContent = text;
+      initPrintSelection();
+      renderPrintSelector();
+      updatePrintPreview();
       updatePrinterStatus(`Printer Android: ${PRINTER_NAME} • Kertas 80mm`);
       printModal.classList.add("show");
     }
 
     function closePrintPreview() {
       printModal.classList.remove("show");
+      printUseSelection = false;
     }
 
     async function chooseBluetoothPrinter() {
@@ -4341,6 +4718,7 @@
 
     if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
     if (closePrintBtn) closePrintBtn.addEventListener("click", closePrintPreview);
+    if (printToggleAllBtn) printToggleAllBtn.addEventListener("click", toggleAllPrintSelection);
     if (selectPrinterBtn) selectPrinterBtn.addEventListener("click", checkAndroidNativePrinter);
     if (sendPrintBtn) sendPrintBtn.addEventListener("click", sendNativePrint);
     if (printModal) printModal.addEventListener("click", event => {
