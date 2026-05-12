@@ -3402,6 +3402,39 @@
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
 
+    function isAndroidAssetFile() {
+      return window.location &&
+        window.location.protocol === "file:" &&
+        String(window.location.href || "").indexOf("/android_asset/") !== -1;
+    }
+
+    function isLocalHtmlFile() {
+      return window.location &&
+        window.location.protocol === "file:" &&
+        !isAndroidAssetFile();
+    }
+
+    function isFetchNetworkError(error) {
+      const text = String(
+        (error && (error.message || error.details || error.hint || error.stack)) || error || ""
+      );
+      return /failed to fetch|networkerror|load failed|fetch/i.test(text);
+    }
+
+    function getSupabaseNetworkHint(error) {
+      if (!isFetchNetworkError(error)) return "";
+
+      if (isLocalHtmlFile()) {
+        return "\n\nPenyebab paling mungkin: file HTML masih dibuka langsung dari folder/Downloads (alamatnya file:///...). Upload ke GitHub Pages/hosting dulu, atau test lewat server lokal http://localhost, jangan double-click file HTML.";
+      }
+
+      if (isAndroidAssetFile()) {
+        return "\n\nMode APK lokal terdeteksi. Kalau error ini muncul di Android, cek izin Internet aplikasi, koneksi HP, dan pastikan Android System WebView/Chrome sudah update.";
+      }
+
+      return "\n\nCek koneksi internet, pastikan URL project Supabase benar, project Supabase tidak sedang paused, Android System WebView/Chrome sudah update, dan request ke supabase.co tidak diblokir.";
+    }
+
     function formatSupabaseError(error) {
       if (!error) return "Error tidak diketahui.";
       const parts = [];
@@ -3410,7 +3443,7 @@
       if (error.details) parts.push("Detail: " + error.details);
       if (error.hint) parts.push("Hint: " + error.hint);
       const text = parts.join(" | ").trim();
-      return text || String(error);
+      return (text || String(error)) + getSupabaseNetworkHint(error);
     }
 
     function alertSupabaseError(title, error) {
@@ -5550,6 +5583,11 @@
         updatePricePreview();
         await refreshItems();
         updateSuggestions();
+        if (isLocalHtmlFile()) {
+          showToast("Mode file lokal: upload ke hosting agar Supabase stabil");
+        } else if (isAndroidAssetFile()) {
+          showToast("Mode APK lokal aktif");
+        }
       } catch (error) {
         console.error(error);
         const message = safeText(formatSupabaseError(error) || "Gagal konek ke Supabase.");
