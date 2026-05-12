@@ -2844,6 +2844,18 @@
     const APP_PIN = "123";
     const PRINTER_NAME = "RPP02N-FF57";
 
+    /* =====================================================
+       SUPABASE CONFIG
+       Catatan penting: pakai ANON PUBLIC saja di HTML/APK.
+       Jangan pernah taruh sb_secret/service_role di aplikasi client.
+    ===================================================== */
+    const SUPABASE_URL = "https://phuzgriglgovzcwgbehr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodXpncmlnbGdvdnpjd2diZWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTQ3ODUsImV4cCI6MjA5NDE3MDc4NX0.gf-cfo8Vos8uYgZRHG0KUB4xMhXAld2oTYv-wNiKneE";
+    const SUPABASE_ITEMS_TABLE = "belanja_items";
+    const SUPABASE_MASTER_TABLE = "belanja_master_data";
+    const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("GANTI"));
+    let supabaseWarned = false;
+
     const pageHome = document.getElementById("pageHome");
     const pageList = document.getElementById("pageList");
     const pagePending = document.getElementById("pagePending");
@@ -3008,6 +3020,164 @@
       }
     }, { passive: true });
 
+    function isSupabaseReady() {
+      return SUPABASE_ENABLED && typeof fetch === "function";
+    }
+
+    function cleanSupabaseUrl(path = "") {
+      return `${SUPABASE_URL.replace(/\/$/, "")}${path}`;
+    }
+
+    async function supabaseRequest(path, options = {}) {
+      if (!isSupabaseReady()) throw new Error("Supabase belum aktif.");
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      const headers = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
+
+      try {
+        const response = await fetch(cleanSupabaseUrl(path), {
+          ...options,
+          headers,
+          signal: controller.signal
+        });
+
+        const text = await response.text();
+        let body = null;
+        if (text) {
+          try { body = JSON.parse(text); }
+          catch (_) { body = text; }
+        }
+
+        if (!response.ok) {
+          const message = typeof body === "string" ? body : (body && (body.message || body.details || body.hint)) || response.statusText;
+          throw new Error(`Supabase ${response.status}: ${message}`);
+        }
+
+        return body;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function warnSupabase(error, fallbackMessage = "Mode offline: data disimpan lokal dulu") {
+      console.warn("Supabase error:", error);
+      if (!supabaseWarned) {
+        supabaseWarned = true;
+        showToast(fallbackMessage);
+      }
+    }
+
+    function encodeFilterValue(value) {
+      return encodeURIComponent(String(value || ""));
+    }
+
+    function rowToItem(row) {
+      const data = row && row.data && typeof row.data === "object" ? row.data : row;
+      return normalizeItem({ ...(data || {}), id: (data && data.id) || (row && row.id) || makeId() });
+    }
+
+    async function supabaseGetItems() {
+      const rows = await supabaseRequest(`/rest/v1/${SUPABASE_ITEMS_TABLE}?select=id,data,updated_at&order=updated_at.desc`, {
+        method: "GET"
+      });
+      return Array.isArray(rows) ? rows.map(rowToItem) : [];
+    }
+
+    async function supabaseUpsertItem(rawItem) {
+      const item = normalizeItem(rawItem);
+      await supabaseRequest(`/rest/v1/${SUPABASE_ITEMS_TABLE}?on_conflict=id`, {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          id: item.id,
+          data: item,
+          updated_at: item.updatedAt || new Date().toISOString()
+        })
+      });
+      return item;
+    }
+
+    async function supabaseDeleteItem(id) {
+      if (!id) return;
+      await supabaseRequest(`/rest/v1/${SUPABASE_ITEMS_TABLE}?id=eq.${encodeFilterValue(id)}`, {
+        method: "DELETE",
+        headers: { Prefer: "return=minimal" }
+      });
+    }
+
+    async function supabaseSaveMasterData(data) {
+      if (!isSupabaseReady()) return;
+      await supabaseRequest(`/rest/v1/${SUPABASE_MASTER_TABLE}?on_conflict=id`, {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          id: "master",
+          data,
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    async function supabaseGetMasterData() {
+      const rows = await supabaseRequest(`/rest/v1/${SUPABASE_MASTER_TABLE}?select=data&id=eq.master&limit=1`, {
+        method: "GET"
+      });
+      if (Array.isArray(rows) && rows[0] && rows[0].data) return rows[0].data;
+      return null;
+    }
+
+    function getLocalAllItems() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function localSaveItem(item) {
+      return runStore("readwrite", store => store.put(item));
+    }
+
+    function localRemoveItemById(id) {
+      return runStore("readwrite", store => store.delete(id));
+    }
+
+    function localClearAllItems() {
+      return runStore("readwrite", store => store.clear());
+    }
+
+    async function replaceLocalCache(newItems) {
+      await localClearAllItems();
+      for (const item of newItems) {
+        await localSaveItem(normalizeItem(item));
+      }
+    }
+
+    async function pushLocalCacheToSupabase(localItems) {
+      if (!isSupabaseReady() || !Array.isArray(localItems) || !localItems.length) return;
+      for (const rawItem of localItems) {
+        await supabaseUpsertItem(rawItem);
+      }
+    }
+
+    async function refreshMasterFromSupabase() {
+      if (!isSupabaseReady()) return;
+      try {
+        const remoteData = await supabaseGetMasterData();
+        if (remoteData) writeStoredSavedData(remoteData, false);
+      } catch (error) {
+        warnSupabase(error, "Saran input pakai data lokal dulu");
+      }
+    }
+
     function openDB() {
       return new Promise((resolve, reject) => {
         if (!window.indexedDB) return reject(new Error("IndexedDB tidak didukung."));
@@ -3038,39 +3208,85 @@
       });
     }
 
-    function getAllItems() {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const store = tx.objectStore(STORE_NAME);
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error);
-      });
+    async function getAllItems() {
+      const localItems = (await getLocalAllItems()).map(normalizeItem);
+
+      if (isSupabaseReady()) {
+        try {
+          // Migrasi otomatis: data lama IndexedDB dikirim ke Supabase dulu.
+          await pushLocalCacheToSupabase(localItems);
+          const remoteItems = await supabaseGetItems();
+          await replaceLocalCache(remoteItems);
+          supabaseWarned = false;
+          return remoteItems;
+        } catch (error) {
+          warnSupabase(error);
+        }
+      }
+
+      return localItems;
     }
 
-    function saveItem(item) { return runStore("readwrite", store => store.put(item)); }
-    function removeItemById(id) { return runStore("readwrite", store => store.delete(id)); }
-    function clearAllItems() { return runStore("readwrite", store => store.clear()); }
-    function clearDoneVariants() {
-      return runStore("readwrite", store => {
-        items.forEach(rawItem => {
-          const item = normalizeItem(rawItem);
-          const hasDone = item.variants.some(variant => variant.done);
-          if (!hasDone) return;
+    async function saveItem(item) {
+      const normalized = normalizeItem(item);
+      await localSaveItem(normalized);
 
-          const remainingVariants = item.variants.filter(variant => !variant.done);
-          if (!remainingVariants.length) {
-            store.delete(item.id);
-          } else {
-            store.put({
-              ...item,
-              variants: remainingVariants,
-              done: false,
-              updatedAt: new Date().toISOString()
-            });
-          }
-        });
-      });
+      if (isSupabaseReady()) {
+        try {
+          await supabaseUpsertItem(normalized);
+          supabaseWarned = false;
+        } catch (error) {
+          warnSupabase(error, "Tersimpan lokal, Supabase belum tersambung");
+        }
+      }
+    }
+
+    async function removeItemById(id) {
+      await localRemoveItemById(id);
+
+      if (isSupabaseReady()) {
+        try {
+          await supabaseDeleteItem(id);
+          supabaseWarned = false;
+        } catch (error) {
+          warnSupabase(error, "Dihapus lokal, Supabase belum tersambung");
+        }
+      }
+    }
+
+    async function clearAllItems() {
+      const ids = new Set(items.map(item => normalizeItem(item).id));
+      (await getLocalAllItems()).map(normalizeItem).forEach(item => ids.add(item.id));
+      await localClearAllItems();
+
+      if (isSupabaseReady()) {
+        try {
+          for (const id of ids) await supabaseDeleteItem(id);
+          supabaseWarned = false;
+        } catch (error) {
+          warnSupabase(error, "Data lokal dihapus, Supabase belum tersambung");
+        }
+      }
+    }
+
+    async function clearDoneVariants() {
+      for (const rawItem of items) {
+        const item = normalizeItem(rawItem);
+        const hasDone = item.variants.some(variant => variant.done);
+        if (!hasDone) continue;
+
+        const remainingVariants = item.variants.filter(variant => !variant.done);
+        if (!remainingVariants.length) {
+          await removeItemById(item.id);
+        } else {
+          await saveItem({
+            ...item,
+            variants: remainingVariants,
+            done: false,
+            updatedAt: new Date().toISOString()
+          });
+        }
+      }
     }
 
     function makeId() {
@@ -3162,7 +3378,7 @@
       }
     }
 
-    function writeStoredSavedData(data) {
+    function writeStoredSavedData(data, syncRemote = true) {
       const nextData = {
         itemNames: cleanSavedList((data && data.itemNames) || []),
         suppliers: cleanSavedList((data && data.suppliers) || []),
@@ -3176,6 +3392,10 @@
         localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(nextData));
       } catch (error) {
         console.warn("Gagal simpan data master saran", error);
+      }
+
+      if (syncRemote && isSupabaseReady()) {
+        supabaseSaveMasterData(nextData).catch(error => warnSupabase(error, "Saran input tersimpan lokal dulu"));
       }
 
       return nextData;
@@ -5282,15 +5502,17 @@
     async function init() {
       try {
         db = await openDB();
+        await refreshMasterFromSupabase();
         setVariantRows([{ colorName: "", qty: 1 }]);
         updatePricePreview();
         await refreshItems();
+        updateSuggestions();
       } catch (error) {
         console.error(error);
         supplierList.innerHTML = `
           <div class="empty">
-            Maaf bro, IndexedDB tidak bisa dibuka di browser ini.<br />
-            Coba pakai Chrome Android atau browser modern lainnya.
+            Maaf bro, database aplikasi belum bisa dibuka.<br />
+            Coba refresh aplikasi atau cek koneksi internet.
           </div>
         `;
       }
