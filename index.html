@@ -1412,17 +1412,43 @@
     }
 
     .print-line.product {
-      font-size: 14px;
-      line-height: 1.28;
-      font-weight: 800;
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 700;
       margin-top: 4px;
     }
 
     .print-line.variant {
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.35;
       font-weight: 600;
       padding-left: 2px;
+    }
+
+    .print-line.variant-check {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 600;
+      padding-left: 2px;
+    }
+
+    .print-line.check-box {
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      justify-self: end;
+    }
+
+    .print-line.separator {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     .print-line.gap {
@@ -4531,6 +4557,48 @@
       return { rows, supplierGroups };
     }
 
+    const PRINT_LINE_WIDTH = 48;
+    const PRINT_BIG_LINE_WIDTH = 24;
+    const PRINT_CHECK_BOX = "[ ]";
+
+    function formatPrintSupplier(supplier = "") {
+      const name = String(supplier || "Supplier belum diisi").replace(/\s+/g, " ").trim();
+      return `- ${name || "Supplier belum diisi"} -`;
+    }
+
+    function formatPrintProduct(productName = "") {
+      const name = String(productName || "Barang").replace(/\s+/g, " ").trim();
+      return `*${name || "Barang"}`;
+    }
+
+    function formatPrintVariant(row) {
+      return `${row.color} = ${row.qty} pcs`;
+    }
+
+    function printSeparator(width = PRINT_LINE_WIDTH) {
+      return "-".repeat(width);
+    }
+
+    function padRightText(text = "", width = PRINT_LINE_WIDTH) {
+      const value = String(text);
+      if (value.length >= width) return value;
+      return value + " ".repeat(width - value.length);
+    }
+
+    function pushChecklistLines(lines, text, width = PRINT_LINE_WIDTH) {
+      const availableTextWidth = Math.max(8, width - PRINT_CHECK_BOX.length - 1);
+      const wrapped = padLine(text, availableTextWidth);
+      wrapped.forEach((line, index) => {
+        const isLast = index === wrapped.length - 1;
+        if (isLast) {
+          lines.push(padRightText(line, width - PRINT_CHECK_BOX.length) + PRINT_CHECK_BOX);
+        } else {
+          lines.push(line);
+        }
+      });
+      lines.push(printSeparator(width));
+    }
+
     function makePrintText() {
       const { rows, supplierGroups } = getPrintGroups();
       const lines = [];
@@ -4542,14 +4610,12 @@
 
       [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
         if (supplierIndex > 0) lines.push("");
-        padLine(supplier, 32).forEach(line => lines.push(line));
+        padLine(formatPrintSupplier(supplier), PRINT_LINE_WIDTH).forEach(line => lines.push(line));
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) lines.push("");
-          padLine(productName, 32).forEach(line => lines.push(line));
-          productRows.forEach(row => {
-            padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
-          });
+          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(line));
+          productRows.forEach(row => pushChecklistLines(lines, formatPrintVariant(row), PRINT_LINE_WIDTH));
         });
       });
 
@@ -4576,13 +4642,14 @@
 
       [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
         if (supplierIndex > 0) blocks.push('<span class="print-line gap"></span>');
-        blocks.push(`<span class="print-line supplier">${escapePrintHtml(supplier)}</span>`);
+        blocks.push(`<span class="print-line supplier">${escapePrintHtml(formatPrintSupplier(supplier))}</span>`);
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) blocks.push('<span class="print-line gap"></span>');
-          blocks.push(`<span class="print-line product">${escapePrintHtml(productName)}</span>`);
+          blocks.push(`<span class="print-line product">${escapePrintHtml(formatPrintProduct(productName))}</span>`);
           productRows.forEach(row => {
-            blocks.push(`<span class="print-line variant">${escapePrintHtml(`${row.color} = ${row.qty} pcs`)}</span>`);
+            blocks.push(`<span class="print-line variant-check"><span>${escapePrintHtml(formatPrintVariant(row))}</span><span class="print-line check-box">${escapePrintHtml(PRINT_CHECK_BOX)}</span></span>`);
+            blocks.push(`<span class="print-line separator">${escapePrintHtml(printSeparator(32))}</span>`);
           });
         });
       });
@@ -4594,7 +4661,6 @@
       const { rows, supplierGroups } = getPrintGroups();
       const normal = "\x1b\x21\x00";
       const bigBold = "\x1b\x21\x38";
-      const productBold = "\x1b\x21\x08";
       const lines = [normal];
 
       if (!rows.length) {
@@ -4605,14 +4671,12 @@
 
       [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
         if (supplierIndex > 0) lines.push("");
-        padLine(supplier, 16).forEach(line => lines.push(bigBold + line + normal));
+        padLine(formatPrintSupplier(supplier), PRINT_BIG_LINE_WIDTH).forEach(line => lines.push(bigBold + line + normal));
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) lines.push("");
-          padLine(productName, 32).forEach(line => lines.push(productBold + line + normal));
-          productRows.forEach(row => {
-            padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
-          });
+          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(normal + line));
+          productRows.forEach(row => pushChecklistLines(lines, formatPrintVariant(row), PRINT_LINE_WIDTH));
         });
       });
 
@@ -4627,13 +4691,14 @@
 
       [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
         if (supplierIndex > 0) blocks.push({ type: "gap" });
-        blocks.push({ type: "supplier", text: supplier, size: "large", bold: true });
+        blocks.push({ type: "supplier", text: formatPrintSupplier(supplier), size: "large", bold: true });
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) blocks.push({ type: "gap" });
-          blocks.push({ type: "product", text: productName, size: "medium", bold: true });
+          blocks.push({ type: "product", text: formatPrintProduct(productName), size: "small", bold: false });
           productRows.forEach(row => {
-            blocks.push({ type: "variant", text: `${row.color} = ${row.qty} pcs`, size: "normal", bold: false });
+            blocks.push({ type: "variant", text: formatPrintVariant(row), checkBox: PRINT_CHECK_BOX, size: "normal", bold: false });
+            blocks.push({ type: "separator", text: printSeparator(32), size: "normal", bold: false });
           });
         });
       });
@@ -4737,8 +4802,8 @@
         selectedCount: activeRows.length,
         font: {
           supplier: { size: "large", bold: true, escpos: "double_width_height_bold" },
-          product: { size: "small", bold: true, escpos: "bold_normal" },
-          variant: { size: "normal", bold: false }
+          product: { size: "small", bold: false, escpos: "normal_with_star_prefix" },
+          variant: { size: "normal", bold: false, checkBox: "right" }
         },
         items: activeRows.map(row => ({
           supplierName: row.supplier,
@@ -4749,7 +4814,9 @@
           color: row.color,
           qty: row.qty,
           unit: "pcs",
-          lineText: `${row.color} = ${row.qty} pcs`,
+          lineText: `${formatPrintVariant(row)} ${PRINT_CHECK_BOX}`,
+          supplierLineText: formatPrintSupplier(row.supplier),
+          productLineText: formatPrintProduct(row.name),
           supplierTextSize: "large",
           nameTextSize: "small"
         }))
