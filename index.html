@@ -1412,7 +1412,7 @@
     }
 
     .print-line.product {
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.25;
       font-weight: 800;
       margin-top: 5px;
@@ -4274,6 +4274,7 @@
       const { rows, supplierGroups } = getPrintGroups();
       const normal = "\x1b\x21\x00";
       const bigBold = "\x1b\x21\x38";
+      const productBold = "\x1b\x21\x18";
       const lines = [normal];
 
       if (!rows.length) {
@@ -4288,7 +4289,7 @@
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) lines.push("");
-          padLine(productName, 16).forEach(line => lines.push(bigBold + line + normal));
+          padLine(productName, 32).forEach(line => lines.push(productBold + line + normal));
           productRows.forEach(row => {
             padLine(`${row.color} = ${row.qty} pcs`, 32).forEach(line => lines.push(line));
           });
@@ -4310,7 +4311,7 @@
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) blocks.push({ type: "gap" });
-          blocks.push({ type: "product", text: productName, size: "large", bold: true });
+          blocks.push({ type: "product", text: productName, size: "medium", bold: true });
           productRows.forEach(row => {
             blocks.push({ type: "variant", text: `${row.color} = ${row.qty} pcs`, size: "normal", bold: false });
           });
@@ -4416,7 +4417,7 @@
         selectedCount: activeRows.length,
         font: {
           supplier: { size: "large", bold: true, escpos: "double_width_height_bold" },
-          product: { size: "large", bold: true, escpos: "double_width_height_bold" },
+          product: { size: "medium", bold: true, escpos: "double_height_bold" },
           variant: { size: "normal", bold: false }
         },
         items: activeRows.map(row => ({
@@ -4430,7 +4431,7 @@
           unit: "pcs",
           lineText: `${row.color} = ${row.qty} pcs`,
           supplierTextSize: "large",
-          nameTextSize: "large"
+          nameTextSize: "medium"
         }))
       };
     }
