@@ -1416,6 +1416,7 @@
       line-height: 1.25;
       font-weight: 700;
       margin-top: 4px;
+      text-align: center;
     }
 
     .print-line.variant {
@@ -4605,6 +4606,13 @@
       return value + " ".repeat(width - value.length);
     }
 
+    function centerText(text = "", width = PRINT_LINE_WIDTH) {
+      const value = String(text);
+      if (value.length >= width) return value;
+      const left = Math.max(0, Math.floor((width - value.length) / 2));
+      return " ".repeat(left) + value;
+    }
+
     function pushChecklistLines(lines, text, width = PRINT_LINE_WIDTH) {
       const availableTextWidth = Math.max(8, width - PRINT_CHECK_BOX.length - 1);
       const wrapped = padLine(text, availableTextWidth);
@@ -4634,7 +4642,7 @@
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) lines.push("");
-          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(line));
+          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(centerText(line, PRINT_LINE_WIDTH)));
           productRows.forEach(row => pushChecklistLines(lines, formatPrintVariant(row), PRINT_LINE_WIDTH));
         });
       });
@@ -4695,7 +4703,7 @@
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) lines.push("");
-          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(normal + line));
+          padLine(formatPrintProduct(productName), PRINT_LINE_WIDTH).forEach(line => lines.push(normal + centerText(line, PRINT_LINE_WIDTH)));
           productRows.forEach(row => pushChecklistLines(lines, formatPrintVariant(row), PRINT_LINE_WIDTH));
         });
       });
@@ -4715,7 +4723,7 @@
 
         [...productGroups.values()].forEach(({ productName, rows: productRows }, productIndex) => {
           if (productIndex > 0) blocks.push({ type: "gap" });
-          blocks.push({ type: "product", text: formatPrintProduct(productName), size: "small", bold: false });
+          blocks.push({ type: "product", text: formatPrintProduct(productName), size: "small", bold: false, align: "center" });
           productRows.forEach(row => {
             blocks.push({ type: "variant", text: formatPrintVariant(row), checkBox: PRINT_CHECK_BOX, size: "normal", bold: false });
             blocks.push({ type: "separator", text: printSeparator(32), size: "normal", bold: false });
