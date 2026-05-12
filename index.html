@@ -2807,8 +2807,15 @@
 
   <script>
     /* =====================================================
-       DARK MODE TOGGLE — preferensi disimpan di Supabase
+       DARK MODE TOGGLE (UI ONLY — tidak menyentuh logika)
     ===================================================== */
+    (function() {
+      const saved = localStorage.getItem('hijab_theme');
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
       const btn = document.getElementById('darkToggleBtn');
       if (!btn) return;
@@ -2818,36 +2825,20 @@
         if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
         else btn.textContent = isDark ? '☀️' : '🌙';
       }
-      window.updateDarkToggleIcon = updateIcon;
       updateIcon();
       btn.addEventListener('click', function() {
         const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('hijab_theme', isDark ? 'dark' : 'light');
         updateIcon();
-        if (window.saveAppTheme) window.saveAppTheme(isDark ? 'dark' : 'light');
       });
     });
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
-    /* =====================================================
-       SUPABASE CONFIG
-       1) Isi URL dan anon key dari Project Settings > API.
-       2) Jangan pernah pakai service_role key di file HTML.
-    ===================================================== */
-    const SUPABASE_URL = "https://phuzgriglggovzcwgbehr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodXpncmlnbGdvdnpjd2diZWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTQ3ODUsImV4cCI6MjA5NDE3MDc4NX0.gf-cfo8Vos8uYgZRHG0KUB4xMhXAld2oTYv-wNiKneE";
-    const SUPABASE_ITEMS_TABLE = "shopping_items";
-    const SUPABASE_MASTER_TABLE = "app_master_data";
-    const SUPABASE_MASTER_KEY = "default";
-
-    // Nama lama untuk migrasi otomatis dari IndexedDB/localStorage ke Supabase.
-    const LEGACY_DB_NAME = "belanja_toko_hijab_android_db";
-    const LEGACY_DB_VERSION = 1;
-    const LEGACY_STORE_NAME = "items";
-    const LEGACY_MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
-    const SUPABASE_MASTER_FALLBACK_KEY = "belanja_toko_hijab_master_saran_supabase_fallback_v1";
+    const DB_NAME = "belanja_toko_hijab_android_db";
+    const DB_VERSION = 1;
+    const STORE_NAME = "items";
+    const MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
     const DEFAULT_UNIT = "pcs";
     const UNSET_SUPPLIER = "Supplier belum diisi";
     const APP_PIN = "123";
@@ -3017,114 +3008,69 @@
       }
     }, { passive: true });
 
-    function isSupabaseConfigured() {
-      return Boolean(
-        SUPABASE_URL &&
-        SUPABASE_ANON_KEY &&
-        !SUPABASE_URL.includes("ISI_SUPABASE") &&
-        !SUPABASE_ANON_KEY.includes("ISI_SUPABASE") &&
-        SUPABASE_URL.startsWith("https://")
-      );
-    }
-
     function openDB() {
-      if (!window.supabase || !window.supabase.createClient) {
-        throw new Error("Library Supabase gagal dimuat. Pastikan internet aktif dan CDN tidak diblokir.");
-      }
-      if (!isSupabaseConfigured()) {
-        throw new Error("Supabase belum dikonfigurasi. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di file HTML.");
-      }
-      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false }
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("IndexedDB tidak didukung."));
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = event => {
+          const database = event.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
+            store.createIndex("createdAt", "createdAt", { unique: false });
+            store.createIndex("done", "done", { unique: false });
+          }
+        };
+        request.onsuccess = event => resolve(event.target.result);
+        request.onerror = event => reject(event.target.error);
       });
     }
 
-    function supabaseRowToItem(row) {
-      return {
-        id: row.id,
-        name: row.name || "",
-        supplierName: row.supplier_name || "",
-        kodiPrice: Number(row.kodi_price) || 0,
-        variants: Array.isArray(row.variants) ? row.variants : [],
-        unit: row.unit || DEFAULT_UNIT,
-        priority: row.priority || "Sedang",
-        note: row.note || "",
-        done: Boolean(row.done),
-        createdAt: row.created_at || row.createdAt || new Date().toISOString(),
-        updatedAt: row.updated_at || row.updatedAt || row.created_at || new Date().toISOString()
-      };
-    }
-
-    function itemToSupabaseRow(rawItem) {
-      const item = normalizeItem(rawItem);
-      const now = new Date().toISOString();
-      return {
-        id: item.id,
-        name: item.name,
-        supplier_name: item.supplierName || "",
-        kodi_price: Number(item.kodiPrice) || 0,
-        variants: item.variants,
-        unit: item.unit || DEFAULT_UNIT,
-        priority: item.priority || "Sedang",
-        note: item.note || "",
-        done: Boolean(item.done),
-        created_at: item.createdAt || now,
-        updated_at: item.updatedAt || now
-      };
-    }
-
-    async function getAllItems() {
-      const { data, error } = await db
-        .from(SUPABASE_ITEMS_TABLE)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data || []).map(supabaseRowToItem);
-    }
-
-    async function saveItem(item) {
-      const { error } = await db
-        .from(SUPABASE_ITEMS_TABLE)
-        .upsert(itemToSupabaseRow(item), { onConflict: "id" });
-      if (error) throw error;
-    }
-
-    async function removeItemById(id) {
-      const { error } = await db
-        .from(SUPABASE_ITEMS_TABLE)
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-    }
-
-    async function clearAllItems() {
-      const { error } = await db
-        .from(SUPABASE_ITEMS_TABLE)
-        .delete()
-        .neq("id", "__never_delete_marker__");
-      if (error) throw error;
-    }
-
-    async function clearDoneVariants() {
-      const jobs = [];
-      items.forEach(rawItem => {
-        const item = normalizeItem(rawItem);
-        const hasDone = item.variants.some(variant => variant.done);
-        if (!hasDone) return;
-
-        const remainingVariants = item.variants.filter(variant => !variant.done);
-        if (!remainingVariants.length) {
-          jobs.push(removeItemById(item.id));
-        } else {
-          jobs.push(saveItem({
-            ...item,
-            variants: remainingVariants,
-            done: false,
-            updatedAt: new Date().toISOString()
-          }));
-        }
+    function runStore(mode, callback) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, mode);
+        const store = tx.objectStore(STORE_NAME);
+        let result;
+        try { result = callback(store); }
+        catch (error) { reject(error); return; }
+        tx.oncomplete = () => resolve(result);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
       });
-      await Promise.all(jobs);
+    }
+
+    function getAllItems() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function saveItem(item) { return runStore("readwrite", store => store.put(item)); }
+    function removeItemById(id) { return runStore("readwrite", store => store.delete(id)); }
+    function clearAllItems() { return runStore("readwrite", store => store.clear()); }
+    function clearDoneVariants() {
+      return runStore("readwrite", store => {
+        items.forEach(rawItem => {
+          const item = normalizeItem(rawItem);
+          const hasDone = item.variants.some(variant => variant.done);
+          if (!hasDone) return;
+
+          const remainingVariants = item.variants.filter(variant => !variant.done);
+          if (!remainingVariants.length) {
+            store.delete(item.id);
+          } else {
+            store.put({
+              ...item,
+              variants: remainingVariants,
+              done: false,
+              updatedAt: new Date().toISOString()
+            });
+          }
+        });
+      });
     }
 
     function makeId() {
@@ -3198,136 +3144,41 @@
       return cleanSavedList([...withoutSameName(values, newValue), newValue]);
     }
 
-    function emptyMasterData() {
-      return {
-        itemNames: [],
-        suppliers: [],
-        colors: [],
-        hiddenItemNames: [],
-        hiddenSuppliers: [],
-        hiddenColors: [],
-        theme: "light"
-      };
-    }
-
-    function cleanMasterData(data) {
-      const fallback = emptyMasterData();
-      return {
-        itemNames: cleanSavedList((data && data.itemNames) || fallback.itemNames),
-        suppliers: cleanSavedList((data && data.suppliers) || fallback.suppliers),
-        colors: cleanSavedList((data && data.colors) || fallback.colors),
-        hiddenItemNames: cleanSavedList((data && data.hiddenItemNames) || fallback.hiddenItemNames),
-        hiddenSuppliers: cleanSavedList((data && data.hiddenSuppliers) || fallback.hiddenSuppliers),
-        hiddenColors: cleanSavedList((data && data.hiddenColors) || fallback.hiddenColors),
-        theme: data && data.theme === "dark" ? "dark" : "light"
-      };
-    }
-
-    let cachedMasterData = emptyMasterData();
-    let masterSaveTimer = null;
-    let masterSavingPromise = Promise.resolve();
-    let masterSupabaseDisabled = false;
-
     function getStoredSavedData() {
-      return cleanMasterData(cachedMasterData);
-    }
-
-    function loadMasterFallbackData() {
       try {
-        const raw = localStorage.getItem(SUPABASE_MASTER_FALLBACK_KEY);
-        return raw ? cleanMasterData(JSON.parse(raw)) : emptyMasterData();
+        const raw = localStorage.getItem(MASTER_DATA_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        return {
+          itemNames: cleanSavedList(data.itemNames),
+          suppliers: cleanSavedList(data.suppliers),
+          colors: cleanSavedList(data.colors),
+          hiddenItemNames: cleanSavedList(data.hiddenItemNames),
+          hiddenSuppliers: cleanSavedList(data.hiddenSuppliers),
+          hiddenColors: cleanSavedList(data.hiddenColors)
+        };
       } catch (error) {
-        console.error("Gagal baca backup saran lokal", error);
-        return emptyMasterData();
+        console.warn("Gagal baca data master saran", error);
+        return { itemNames: [], suppliers: [], colors: [], hiddenItemNames: [], hiddenSuppliers: [], hiddenColors: [] };
       }
-    }
-
-    function saveMasterFallbackData(data) {
-      try {
-        localStorage.setItem(SUPABASE_MASTER_FALLBACK_KEY, JSON.stringify(cleanMasterData(data)));
-      } catch (error) {
-        console.error("Gagal simpan backup saran lokal", error);
-      }
-    }
-
-    function mergeMasterData(primary, secondary) {
-      const first = cleanMasterData(primary);
-      const second = cleanMasterData(secondary);
-      return cleanMasterData({
-        itemNames: [...first.itemNames, ...second.itemNames],
-        suppliers: [...first.suppliers, ...second.suppliers],
-        colors: [...first.colors, ...second.colors],
-        hiddenItemNames: [...first.hiddenItemNames, ...second.hiddenItemNames],
-        hiddenSuppliers: [...first.hiddenSuppliers, ...second.hiddenSuppliers],
-        hiddenColors: [...first.hiddenColors, ...second.hiddenColors],
-        theme: first.theme === "dark" || second.theme === "dark" ? "dark" : "light"
-      });
-    }
-
-    async function persistMasterDataNow(data = cachedMasterData) {
-      const payload = cleanMasterData(data);
-      saveMasterFallbackData(payload);
-
-      // Saran nama/supplier/warna jangan sampai bikin simpan barang gagal.
-      // Kalau tabel app_master_data belum dibuat/policy belum benar, app tetap jalan dan barang tetap masuk Supabase.
-      if (masterSupabaseDisabled) return payload;
-
-      const { error } = await db
-        .from(SUPABASE_MASTER_TABLE)
-        .upsert({
-          key: SUPABASE_MASTER_KEY,
-          data: payload,
-          updated_at: new Date().toISOString()
-        }, { onConflict: "key" });
-      if (error) {
-        masterSupabaseDisabled = true;
-        console.error("Gagal simpan data master ke Supabase, pakai backup lokal", error);
-        return payload;
-      }
-      return payload;
-    }
-
-    function queueMasterDataSave() {
-      clearTimeout(masterSaveTimer);
-      masterSaveTimer = setTimeout(() => {
-        masterSavingPromise = persistMasterDataNow(cachedMasterData).catch(error => {
-          console.error("Gagal simpan data master", error);
-        });
-      }, 180);
-    }
-
-    async function flushMasterDataSave() {
-      clearTimeout(masterSaveTimer);
-      masterSavingPromise = persistMasterDataNow(cachedMasterData).catch(error => {
-        console.error("Gagal simpan data master", error);
-        return cleanMasterData(cachedMasterData);
-      });
-      await masterSavingPromise;
-    }
-
-    async function loadStoredSavedData() {
-      const fallbackData = loadMasterFallbackData();
-      try {
-        const { data, error } = await db
-          .from(SUPABASE_MASTER_TABLE)
-          .select("data")
-          .eq("key", SUPABASE_MASTER_KEY)
-          .maybeSingle();
-        if (error) throw error;
-        cachedMasterData = mergeMasterData(data && data.data ? data.data : {}, fallbackData);
-        saveMasterFallbackData(cachedMasterData);
-      } catch (error) {
-        masterSupabaseDisabled = true;
-        console.error("Gagal load app_master_data dari Supabase, pakai backup lokal", error);
-        cachedMasterData = fallbackData;
-      }
-      return getStoredSavedData();
     }
 
     function writeStoredSavedData(data) {
-      cachedMasterData = cleanMasterData(data);
-      queueMasterDataSave();
-      return getStoredSavedData();
+      const nextData = {
+        itemNames: cleanSavedList((data && data.itemNames) || []),
+        suppliers: cleanSavedList((data && data.suppliers) || []),
+        colors: cleanSavedList((data && data.colors) || []),
+        hiddenItemNames: cleanSavedList((data && data.hiddenItemNames) || []),
+        hiddenSuppliers: cleanSavedList((data && data.hiddenSuppliers) || []),
+        hiddenColors: cleanSavedList((data && data.hiddenColors) || [])
+      };
+
+      try {
+        localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(nextData));
+      } catch (error) {
+        console.warn("Gagal simpan data master saran", error);
+      }
+
+      return nextData;
     }
 
     function saveStoredSavedData(data) {
@@ -3344,26 +3195,11 @@
         // data itu harus muncul kembali dan tidak dianggap hidden.
         hiddenItemNames: removeHiddenMatches(oldData.hiddenItemNames, newItemNames),
         hiddenSuppliers: removeHiddenMatches(oldData.hiddenSuppliers, newSuppliers),
-        hiddenColors: removeHiddenMatches(oldData.hiddenColors, newColors),
-        theme: oldData.theme || "light"
+        hiddenColors: removeHiddenMatches(oldData.hiddenColors, newColors)
       };
 
       return writeStoredSavedData(nextData);
     }
-
-    function applyStoredTheme() {
-      const saved = getStoredSavedData();
-      document.documentElement.classList.toggle("dark", saved.theme === "dark");
-      if (window.updateDarkToggleIcon) window.updateDarkToggleIcon();
-    }
-
-    function saveThemePreference(theme) {
-      const data = getStoredSavedData();
-      data.theme = theme === "dark" ? "dark" : "light";
-      writeStoredSavedData(data);
-    }
-
-    window.saveAppTheme = saveThemePreference;
 
     function visibleSavedList(values, hiddenValues) {
       const hidden = new Set(cleanSavedList(hiddenValues).map(sameNameKey));
@@ -3400,56 +3236,6 @@
       toast.textContent = message;
       toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 1500);
-    }
-
-    function isAndroidAssetFile() {
-      return window.location &&
-        window.location.protocol === "file:" &&
-        String(window.location.href || "").indexOf("/android_asset/") !== -1;
-    }
-
-    function isLocalHtmlFile() {
-      return window.location &&
-        window.location.protocol === "file:" &&
-        !isAndroidAssetFile();
-    }
-
-    function isFetchNetworkError(error) {
-      const text = String(
-        (error && (error.message || error.details || error.hint || error.stack)) || error || ""
-      );
-      return /failed to fetch|networkerror|load failed|fetch/i.test(text);
-    }
-
-    function getSupabaseNetworkHint(error) {
-      if (!isFetchNetworkError(error)) return "";
-
-      if (isLocalHtmlFile()) {
-        return "\n\nPenyebab paling mungkin: file HTML masih dibuka langsung dari folder/Downloads (alamatnya file:///...). Upload ke GitHub Pages/hosting dulu, atau test lewat server lokal http://localhost, jangan double-click file HTML.";
-      }
-
-      if (isAndroidAssetFile()) {
-        return "\n\nMode APK lokal terdeteksi. Kalau error ini muncul di Android, cek izin Internet aplikasi, koneksi HP, dan pastikan Android System WebView/Chrome sudah update.";
-      }
-
-      return "\n\nCek koneksi internet, pastikan URL project Supabase benar, project Supabase tidak sedang paused, Android System WebView/Chrome sudah update, dan request ke supabase.co tidak diblokir.";
-    }
-
-    function formatSupabaseError(error) {
-      if (!error) return "Error tidak diketahui.";
-      const parts = [];
-      if (error.message) parts.push(error.message);
-      if (error.code) parts.push("Kode: " + error.code);
-      if (error.details) parts.push("Detail: " + error.details);
-      if (error.hint) parts.push("Hint: " + error.hint);
-      const text = parts.join(" | ").trim();
-      return (text || String(error)) + getSupabaseNetworkHint(error);
-    }
-
-    function alertSupabaseError(title, error) {
-      console.error(title, error);
-      const detail = formatSupabaseError(error);
-      alert(title + "\n\nDetail: " + detail + "\n\nKalau muncul tulisan relation/table tidak ada, jalankan file SQL Supabase dulu di SQL Editor.");
     }
 
     let pinResolve = null;
@@ -4158,7 +3944,6 @@
 
       try {
         saveStoredSavedData(getSavedData());
-        await flushMasterDataSave();
         const jobs = [];
         let deletedCount = 0;
 
@@ -5355,82 +5140,6 @@
       if (pageBudget && pageBudget.classList.contains("active")) renderBudgetPage(true);
     }
 
-    function readLegacyMasterData() {
-      try {
-        if (!window.localStorage) return null;
-        const raw = localStorage.getItem(LEGACY_MASTER_DATA_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch (error) {
-        console.warn("Gagal baca master lama dari localStorage", error);
-        return null;
-      }
-    }
-
-    function hasMasterContent(data) {
-      if (!data) return false;
-      return [data.itemNames, data.suppliers, data.colors, data.hiddenItemNames, data.hiddenSuppliers, data.hiddenColors]
-        .some(value => Array.isArray(value) && value.length);
-    }
-
-    function readLegacyIndexedItems() {
-      return new Promise(resolve => {
-        if (!window.indexedDB) return resolve([]);
-        let settled = false;
-        function done(value) {
-          if (settled) return;
-          settled = true;
-          resolve(Array.isArray(value) ? value : []);
-        }
-        try {
-          const request = indexedDB.open(LEGACY_DB_NAME, LEGACY_DB_VERSION);
-          request.onupgradeneeded = event => {
-            // Kalau database lama belum ada, jangan buat data baru.
-            event.target.transaction.abort();
-            done([]);
-          };
-          request.onerror = () => done([]);
-          request.onsuccess = event => {
-            const legacyDb = event.target.result;
-            if (!legacyDb.objectStoreNames.contains(LEGACY_STORE_NAME)) {
-              legacyDb.close();
-              return done([]);
-            }
-            const tx = legacyDb.transaction(LEGACY_STORE_NAME, "readonly");
-            const store = tx.objectStore(LEGACY_STORE_NAME);
-            const getAllRequest = store.getAll();
-            getAllRequest.onsuccess = () => {
-              legacyDb.close();
-              done(getAllRequest.result || []);
-            };
-            getAllRequest.onerror = () => {
-              legacyDb.close();
-              done([]);
-            };
-          };
-        } catch (error) {
-          console.warn("Gagal baca IndexedDB lama", error);
-          done([]);
-        }
-      });
-    }
-
-    async function migrateLegacyDataIfNeeded() {
-      const legacyMaster = readLegacyMasterData();
-      if (hasMasterContent(legacyMaster)) {
-        saveStoredSavedData(legacyMaster);
-        await flushMasterDataSave();
-      }
-
-      const legacyItems = await readLegacyIndexedItems();
-      if (!legacyItems.length) return;
-
-      const currentItems = await getAllItems();
-      if (currentItems.length) return;
-
-      await Promise.all(legacyItems.map(item => saveItem(normalizeItem(item))));
-      showToast(`${legacyItems.length} data lama dipindahkan ke Supabase`);
-    }
-
     function syncMasterFromExistingItems() {
       if (!Array.isArray(items) || !items.length) return;
       const data = { itemNames: [], suppliers: [], colors: [] };
@@ -5458,7 +5167,8 @@
         updateSuggestions();
         showToast("Data diperbarui");
       } catch (error) {
-        alertSupabaseError("Gagal refresh data bro.", error);
+        console.error(error);
+        alert("Gagal refresh data bro. Coba ulangi.");
       }
     }
 
@@ -5472,7 +5182,6 @@
 
       try {
         saveStoredSavedData(savedData);
-        await flushMasterDataSave();
         await clearAllItems();
         items = [];
         selectedSupplier = "";
@@ -5483,7 +5192,8 @@
         showPage("home");
         showToast("Data dihapus, nama/supplier/warna tetap aman");
       } catch (error) {
-        alertSupabaseError("Gagal hapus data bro.", error);
+        console.error(error);
+        alert("Gagal hapus data bro. Coba refresh lalu ulangi.");
       }
     }
 
@@ -5518,18 +5228,14 @@
       if (item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Jumlah warna minimal 1 bro.");
       try {
         const edited = Boolean(editId.value);
-
-        // Yang wajib sukses cuma data barang. Data saran disimpan setelahnya dan tidak boleh memblokir tombol Simpan.
-        await saveItem(item);
-
         rememberSavedFromItem(item);
-        flushMasterDataSave().catch(error => console.error("Gagal simpan saran setelah simpan barang", error));
-
+        await saveItem(item);
         await refreshItems();
         resetForm();
         showToast(edited ? "Barang diperbarui" : "Barang ditambahkan");
       } catch (error) {
-        alertSupabaseError("Gagal menyimpan data bro.", error);
+        console.error(error);
+        alert("Gagal menyimpan data bro. Coba refresh lalu ulangi.");
       }
     });
 
@@ -5575,29 +5281,18 @@
 
     async function init() {
       try {
-        db = openDB();
-        await loadStoredSavedData();
-        applyStoredTheme();
-        await migrateLegacyDataIfNeeded();
+        db = await openDB();
         setVariantRows([{ colorName: "", qty: 1 }]);
         updatePricePreview();
         await refreshItems();
-        updateSuggestions();
-        if (isLocalHtmlFile()) {
-          showToast("Mode file lokal: upload ke hosting agar Supabase stabil");
-        } else if (isAndroidAssetFile()) {
-          showToast("Mode APK lokal aktif");
-        }
       } catch (error) {
         console.error(error);
-        const message = safeText(formatSupabaseError(error) || "Gagal konek ke Supabase.");
         supplierList.innerHTML = `
           <div class="empty">
-            ${message}<br />
-            Cek apakah file SQL sudah di-Run di Supabase SQL Editor, lalu refresh aplikasi.
+            Maaf bro, IndexedDB tidak bisa dibuka di browser ini.<br />
+            Coba pakai Chrome Android atau browser modern lainnya.
           </div>
         `;
-        if (pendingItemList) pendingItemList.innerHTML = supplierList.innerHTML;
       }
     }
 
