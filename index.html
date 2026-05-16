@@ -3342,12 +3342,37 @@
       });
     }
 
+    function normalizeBridgeVariants(raw) {
+      const source = Array.isArray(raw.variants) && raw.variants.length
+        ? raw.variants
+        : (Array.isArray(raw.colors) && raw.colors.length ? raw.colors : [{ colorName: raw.colorName || raw.color || "", qty: raw.qty || 1, done: false }]);
+      const merged = [];
+      const seen = new Map();
+      source.forEach(entry => {
+        const isObj = entry && typeof entry === "object";
+        const colorName = cleanNameValue(isObj ? (entry.colorName || entry.color || entry.name || entry.motif || "") : entry);
+        if (!colorName) return;
+        const qty = Math.max(1, Number(isObj ? (entry.qty || entry.quantity || entry.jumlah || 1) : 1) || 1);
+        const done = Boolean(isObj && entry.done);
+        const key = sameNameKey(colorName);
+        if (seen.has(key)) {
+          const existing = seen.get(key);
+          existing.qty += qty;
+          existing.done = existing.done && done;
+        } else {
+          const variant = { colorName, qty, done };
+          seen.set(key, variant);
+          merged.push(variant);
+        }
+      });
+      if (!merged.length) merged.push({ colorName: cleanNameValue(raw.colorName || raw.color || "Tanpa warna"), qty: Math.max(1, Number(raw.qty) || 1), done: false });
+      return merged;
+    }
+
     function normalizeStaffBridgeItem(rawItem) {
       const now = new Date().toISOString();
       const raw = rawItem && typeof rawItem === "object" ? rawItem : {};
-      const variants = Array.isArray(raw.variants) && raw.variants.length
-        ? raw.variants
-        : [{ colorName: raw.colorName || raw.color || "", qty: raw.qty || 1, done: false }];
+      const variants = normalizeBridgeVariants(raw);
       const item = normalizeItem({
         id: raw.id || makeId(),
         name: raw.name || raw.itemName || raw.productName || "",
@@ -3710,18 +3735,19 @@
     }
 
     function normalizeItem(item) {
+      item = item && typeof item === "object" ? item : {};
       const oldItemDone = Boolean(item.done);
-      const variants = Array.isArray(item.variants) && item.variants.length
-        ? item.variants.map(v => ({
-            colorName: safeText(v.colorName),
-            qty: Math.max(1, Number(v.qty) || 1),
-            done: Boolean(v.done) || oldItemDone
-          }))
-        : [{
-            colorName: safeText(item.colorName),
-            qty: Math.max(1, Number(item.qty) || 1),
-            done: oldItemDone
-          }];
+      const rawVariants = Array.isArray(item.variants) && item.variants.length
+        ? item.variants
+        : [{ colorName: item.colorName || item.color || "", qty: item.qty || 1, done: oldItemDone }];
+      const variants = rawVariants.map(v => {
+        const raw = v && typeof v === "object" ? v : { colorName: v, qty: 1 };
+        return {
+          colorName: cleanNameValue(raw.colorName || raw.color || raw.name || raw.motif || ""),
+          qty: Math.max(1, Number(raw.qty || raw.quantity || raw.jumlah) || 1),
+          done: Boolean(raw.done) || oldItemDone
+        };
+      }).filter((variant, index, arr) => variant.colorName || arr.length === 1);
 
       return {
         ...item,
@@ -3812,10 +3838,11 @@
     }
 
     function getFormVariants() {
-      return [...variantList.querySelectorAll(".variant-row")].map(row => ({
-        colorName: safeText(row.querySelector(".variant-color").value),
-        qty: Math.max(1, Number(row.querySelector(".variant-qty").value) || 1)
-      }));
+      const variants = [...variantList.querySelectorAll(".variant-row")].map(row => ({
+        colorName: cleanNameValue(row.querySelector(".variant-color")?.value),
+        qty: Math.max(1, Number(row.querySelector(".variant-qty")?.value) || 1)
+      })).filter(variant => variant.colorName);
+      return variants;
     }
 
     function makeSavedChip(text, onClick) {
@@ -5081,7 +5108,7 @@
         const addBtn = document.createElement("button");
         addBtn.className = "btn btn-green";
         addBtn.type = "button";
-        addBtn.textContent = "+ Tambahkan ke Keranjang";
+        addBtn.textContent = item.variants.length > 1 ? "+ Tambahkan Semua Warna" : "+ Tambahkan ke Keranjang";
         addBtn.addEventListener("click", () => addStaffRequestToCart(item));
 
         const editBtn = document.createElement("button");
@@ -5831,7 +5858,7 @@
       event.preventDefault();
       const item = getFormItem();
       if (!item.name) return alert("Nama barang wajib diisi bro.");
-      if (item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Jumlah warna minimal 1 bro.");
+      if (!item.variants.length || item.variants.reduce((sum, variant) => sum + variant.qty, 0) < 1) return alert("Minimal isi 1 warna bro.");
       try {
         const edited = Boolean(editId.value);
         rememberSavedFromItem(item);
