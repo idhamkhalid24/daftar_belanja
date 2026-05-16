@@ -989,6 +989,56 @@
       border-top: 1px solid var(--border);
     }
 
+
+
+    /* =====================================================
+       STAFF REQUEST INBOX
+    ===================================================== */
+    .staff-inbox-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 5px;
+    }
+
+    .staff-actions-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 14px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .staff-card .simple-product-head strong {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .staff-meta {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    .staff-note {
+      margin: 9px 12px 0;
+      padding: 9px 10px;
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--card-2);
+      color: var(--text-2);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .staff-card .simple-actions {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+
     /* =====================================================
        ITEM CARD
     ===================================================== */
@@ -1160,7 +1210,7 @@
       transform: translateX(-50%);
       width: min(720px, calc(100% - 20px));
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
       background: var(--nav-bg);
       border: 1px solid var(--nav-border);
@@ -2660,6 +2710,23 @@
       </section>
     </section>
 
+    <section class="page page-staff" id="pageStaff">
+      <section class="card">
+        <div class="detail-top">
+          <div class="detail-title">
+            <h2>Kiriman Staff</h2>
+            <div class="staff-inbox-note">Barang kosong dari aplikasi Stafku masuk ke sini dulu. Tekan <b>Tambahkan ke Keranjang</b> kalau mau masuk ke list belanja manual.</div>
+          </div>
+          <div class="detail-summary" id="staffSummary"></div>
+        </div>
+        <div class="staff-actions-bar">
+          <button class="btn btn-light" type="button" id="refreshStaffRequestsBtn">↻ Refresh Kiriman</button>
+          <button class="btn btn-green" type="button" id="addAllStaffRequestsBtn">+ Tambahkan Semua</button>
+        </div>
+        <div class="list" id="staffRequestList"></div>
+      </section>
+    </section>
+
     <section class="page page-list" id="pageList">
       <section class="card">
         <div class="card-header">
@@ -2729,6 +2796,10 @@
     <button class="nav-btn active" type="button" data-page="home">
       <span class="nav-icon" aria-hidden="true">🏠</span>
       <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" type="button" data-page="staff">
+      <span class="nav-icon" aria-hidden="true">📥</span>
+      <span class="nav-label">Staff</span>
     </button>
     <button class="nav-btn" type="button" data-page="list">
       <span class="nav-icon" aria-hidden="true">🏬</span>
@@ -2839,6 +2910,7 @@
     const DB_VERSION = 1;
     const STORE_NAME = "items";
     const MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
+    const STAFF_BRIDGE_KEY = "stafku_to_belanjaku_barang_kosong_v1";
     const DEFAULT_UNIT = "pcs";
     const UNSET_SUPPLIER = "Supplier belum diisi";
     const APP_PIN = "123";
@@ -2857,6 +2929,7 @@
     let supabaseWarned = false;
 
     const pageHome = document.getElementById("pageHome");
+    const pageStaff = document.getElementById("pageStaff");
     const pageList = document.getElementById("pageList");
     const pagePending = document.getElementById("pagePending");
     const pageBudget = document.getElementById("pageBudget");
@@ -2897,6 +2970,10 @@
     const savedToggleButtons = document.querySelectorAll("[data-saved-target]");
 
     const supplierList = document.getElementById("supplierList");
+    const staffRequestList = document.getElementById("staffRequestList");
+    const staffSummary = document.getElementById("staffSummary");
+    const refreshStaffRequestsBtn = document.getElementById("refreshStaffRequestsBtn");
+    const addAllStaffRequestsBtn = document.getElementById("addAllStaffRequestsBtn");
     const pendingItemList = document.getElementById("pendingItemList");
     const pendingSummary = document.getElementById("pendingSummary");
     const detailItemList = document.getElementById("detailItemList");
@@ -2950,6 +3027,7 @@
 
     function showPage(pageName, pushHistory = true) {
       pageHome.classList.toggle("active", pageName === "home");
+      if (pageStaff) pageStaff.classList.toggle("active", pageName === "staff");
       pageList.classList.toggle("active", pageName === "list");
       pagePending.classList.toggle("active", pageName === "pending");
       if (pageBudget) pageBudget.classList.toggle("active", pageName === "budget");
@@ -3239,6 +3317,76 @@
           warnSupabase(error, "Tersimpan lokal, Supabase belum tersambung");
         }
       }
+    }
+
+
+    function readStaffBridgeQueue() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STAFF_BRIDGE_KEY) || "[]");
+        return Array.isArray(raw) ? raw.filter(Boolean) : [];
+      } catch (error) {
+        console.warn("Gagal baca kiriman Stafku", error);
+        return [];
+      }
+    }
+
+    function clearStaffBridgeQueue() {
+      try { localStorage.removeItem(STAFF_BRIDGE_KEY); }
+      catch (error) { console.warn("Gagal bersihkan kiriman Stafku", error); }
+    }
+
+    function normalizeStaffBridgeItem(rawItem) {
+      const now = new Date().toISOString();
+      const raw = rawItem && typeof rawItem === "object" ? rawItem : {};
+      const variants = Array.isArray(raw.variants) && raw.variants.length
+        ? raw.variants
+        : [{ colorName: raw.colorName || raw.color || "", qty: raw.qty || 1, done: false }];
+      const item = normalizeItem({
+        id: raw.id || makeId(),
+        name: raw.name || raw.itemName || raw.productName || "",
+        supplierName: raw.supplierName || raw.supplier || "",
+        kodiPrice: Number(raw.kodiPrice) || 0,
+        variants,
+        unit: DEFAULT_UNIT,
+        priority: raw.priority || "Tinggi",
+        note: raw.note || "Dari Stafku - barang kosong",
+        done: false,
+        source: raw.source || "stafku_barang_kosong",
+        staffStatus: raw.staffStatus || "inbox",
+        staffRequest: raw.staffRequest !== false,
+        createdBy: raw.createdBy || "staff",
+        createdByName: raw.createdByName || raw.staffName || "Staff",
+        createdAt: raw.createdAt || now,
+        updatedAt: raw.updatedAt || now
+      });
+      return item.name ? item : null;
+    }
+
+    async function importStaffBridgeQueue(showMessage = false) {
+      if (!db) return 0;
+      const queue = readStaffBridgeQueue();
+      if (!queue.length) return 0;
+
+      let imported = 0;
+      try {
+        for (const rawItem of queue) {
+          const item = normalizeStaffBridgeItem(rawItem);
+          if (!item) continue;
+          rememberSavedFromItem(item);
+          await saveItem(item);
+          imported += 1;
+        }
+        clearStaffBridgeQueue();
+        if (imported) {
+          await refreshItems();
+          updateSuggestions();
+          if (showMessage) showToast(`${imported} barang dari Stafku masuk halaman Staff`);
+        }
+      } catch (error) {
+        console.warn("Gagal impor kiriman Stafku", error);
+        if (showMessage) showToast("Kiriman Stafku belum masuk, coba refresh");
+      }
+      return imported;
     }
 
     async function removeItemById(id) {
@@ -3988,10 +4136,26 @@
       });
     }
 
+
+    function isStaffInboxItem(rawItem) {
+      const item = normalizeItem(rawItem || {});
+      const source = String(item.source || "");
+      const status = String(item.staffStatus || "").toLowerCase();
+      return source === "stafku_barang_kosong" && status !== "added" && !item.staffAddedAt;
+    }
+
+    function getCartItems() {
+      return items.filter(item => !isStaffInboxItem(item));
+    }
+
+    function getStaffRequestItems() {
+      return sortItems(items.filter(isStaffInboxItem));
+    }
+
     function getFilteredItems() {
       const keyword = searchInput.value.toLowerCase().trim();
       const status = statusFilter.value;
-      return sortItems(items).filter(rawItem => {
+      return sortItems(getCartItems()).filter(rawItem => {
         const item = normalizeItem(rawItem);
         const colorText = item.variants.map(variant => variant.colorName).join(" ");
         const qtyText = item.variants.map(variant => variant.qty).join(" ");
@@ -4003,8 +4167,8 @@
     }
 
     function renderSummary() {
-      const pendingItems = items.filter(item => hasPendingVariant(item));
-      totalCount.textContent = items.length;
+      const pendingItems = getCartItems().filter(item => hasPendingVariant(item));
+      totalCount.textContent = getCartItems().length;
       pendingCount.textContent = pendingItems.length;
       totalPcsCount.textContent = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
       totalModalCount.textContent = formatRupiah(pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0));
@@ -4041,7 +4205,7 @@
 
     function pruneSelectedVariantKeys() {
       const validKeys = new Set();
-      items.forEach(rawItem => {
+      getCartItems().forEach(rawItem => {
         const item = normalizeItem(rawItem);
         item.variants.forEach((variant, variantIndex) => validKeys.add(getVariantSelectionKey(item, variantIndex)));
       });
@@ -4393,7 +4557,7 @@
 
     function getItemsForSupplier(supplierName) {
       const targetKey = sameNameKey(supplierName || UNSET_SUPPLIER);
-      return sortItems(items).filter(item => sameNameKey(getSupplierKey(item)) === targetKey);
+      return sortItems(getCartItems()).filter(item => sameNameKey(getSupplierKey(item)) === targetKey);
     }
 
     function openSupplierDetail(supplierName) {
@@ -4517,7 +4681,7 @@
 
     function getBudgetRows() {
       const rows = [];
-      sortItems(items).forEach(rawItem => {
+      sortItems(getCartItems()).forEach(rawItem => {
         const item = normalizeItem(rawItem);
         const pendingVariants = item.variants
           .map((variant, variantIndex) => ({ variant, variantIndex }))
@@ -4719,9 +4883,221 @@
       });
     }
 
+
+    async function addStaffRequestToCart(rawItem, options = {}) {
+      const item = normalizeItem(rawItem);
+      const now = new Date().toISOString();
+      const nextItem = {
+        ...item,
+        staffStatus: "added",
+        staffAddedAt: now,
+        updatedAt: now,
+        priority: item.priority || "Tinggi",
+        done: item.variants.length ? item.variants.every(variant => variant.done) : false
+      };
+      try {
+        rememberSavedFromItem(nextItem);
+        await saveItem(nextItem);
+        await refreshItems();
+        updateSuggestions();
+        if (options.openList !== false) showPage("list");
+        if (options.toast !== false) showToast("Masuk ke keranjang Belanjaku");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menambahkan ke keranjang bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    async function addAllStaffRequestsToCart() {
+      const requests = getStaffRequestItems();
+      if (!requests.length) {
+        showToast("Belum ada kiriman staff");
+        return;
+      }
+      const ok = confirm(`Tambahkan ${requests.length} kiriman staff ke keranjang/list belanja?`);
+      if (!ok) return;
+      try {
+        const now = new Date().toISOString();
+        for (const rawItem of requests) {
+          const item = normalizeItem(rawItem);
+          const nextItem = {
+            ...item,
+            staffStatus: "added",
+            staffAddedAt: now,
+            updatedAt: now,
+            priority: item.priority || "Tinggi",
+            done: item.variants.length ? item.variants.every(variant => variant.done) : false
+          };
+          rememberSavedFromItem(nextItem);
+          await saveItem(nextItem);
+        }
+        await refreshItems();
+        updateSuggestions();
+        showPage("list");
+        showToast(`${requests.length} kiriman masuk keranjang`);
+      } catch (error) {
+        console.error(error);
+        alert("Gagal menambahkan semua kiriman bro. Coba refresh lalu ulangi.");
+      }
+    }
+
+    function editStaffRequest(rawItem) {
+      const item = normalizeItem(rawItem);
+      editItem(item);
+      showToast("Lengkapi data, lalu Simpan Perubahan");
+    }
+
+    async function deleteStaffRequest(rawItem) {
+      const item = normalizeItem(rawItem);
+      const ok = confirm(`Hapus kiriman staff "${item.name}"?`);
+      if (!ok) return;
+      try {
+        await removeItemById(item.id);
+        await refreshItems();
+        showToast("Kiriman staff dihapus");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal hapus kiriman staff bro.");
+      }
+    }
+
+    async function refreshStaffRequests() {
+      try {
+        await checkStaffBridgeQueue();
+        await refreshItems();
+        showToast("Kiriman staff diperbarui");
+      } catch (error) {
+        console.error(error);
+        alert("Gagal refresh kiriman staff bro.");
+      }
+    }
+
+    function renderStaffRequestsPage() {
+      if (!staffRequestList || !staffSummary) return;
+      const requests = getStaffRequestItems();
+      const totalPcs = requests.reduce((sum, item) => sum + getTotalQty(item), 0);
+      const latest = requests[0] ? new Date(requests[0].createdAt || Date.now()).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : "-";
+
+      renderMiniStats(staffSummary, [
+        ["Kiriman", requests.length],
+        ["Total Pcs", totalPcs],
+        ["Terbaru", latest]
+      ]);
+
+      staffRequestList.innerHTML = "";
+      if (!requests.length) {
+        staffRequestList.innerHTML = `<div class="empty">Belum ada barang kosong dari Staff bro.</div>`;
+        return;
+      }
+
+      const simpleList = document.createElement("div");
+      simpleList.className = "simple-detail";
+
+      requests.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const row = document.createElement("div");
+        row.className = "simple-row staff-card";
+
+        const head = document.createElement("div");
+        head.className = "simple-product-head with-total";
+        const headText = document.createElement("div");
+        const headLabel = document.createElement("span");
+        headLabel.textContent = "Barang dari Staff";
+        const headValue = document.createElement("strong");
+        headValue.textContent = item.name || "Tanpa nama";
+        const meta = document.createElement("div");
+        meta.className = "staff-meta";
+        const staffName = item.createdByName || item.createdBy || "Staff";
+        const supplierText = getSupplierKey(item) || UNSET_SUPPLIER;
+        const dateText = item.createdAt ? new Date(item.createdAt).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "baru saja";
+        meta.textContent = `${staffName} • ${supplierText} • ${dateText}`;
+        headText.append(headLabel, headValue, meta);
+        const headTotal = document.createElement("div");
+        headTotal.className = "product-total-pill";
+        headTotal.textContent = `${getTotalQty(item)} pcs`;
+        head.append(headText, headTotal);
+        row.appendChild(head);
+
+        item.variants.forEach(variant => {
+          const variantRow = document.createElement("div");
+          variantRow.className = "simple-variant-row";
+
+          const statusWrap = document.createElement("div");
+          statusWrap.className = "select-check-wrap";
+          const statusDot = document.createElement("button");
+          statusDot.className = "select-check selected";
+          statusDot.type = "button";
+          statusDot.textContent = "!";
+          statusDot.title = "Kiriman staff";
+          statusWrap.appendChild(statusDot);
+
+          const checkWrap = document.createElement("div");
+          checkWrap.className = "variant-check-wrap";
+          const cartDot = document.createElement("button");
+          cartDot.className = "variant-check";
+          cartDot.type = "button";
+          cartDot.textContent = "";
+          cartDot.title = "Belum masuk keranjang";
+          checkWrap.appendChild(cartDot);
+
+          const warna = document.createElement("div");
+          warna.className = "simple-cell";
+          const warnaLabel = document.createElement("span");
+          warnaLabel.textContent = "Warna";
+          const warnaValue = document.createElement("strong");
+          warnaValue.textContent = variant.colorName || "Tanpa warna";
+          warna.append(warnaLabel, warnaValue);
+
+          const jumlah = document.createElement("div");
+          jumlah.className = "simple-cell";
+          const jumlahLabel = document.createElement("span");
+          jumlahLabel.textContent = "Jumlah";
+          const jumlahValue = document.createElement("strong");
+          jumlahValue.textContent = `${variant.qty} pcs`;
+          jumlah.append(jumlahLabel, jumlahValue);
+
+          variantRow.append(statusWrap, checkWrap, warna, jumlah);
+          row.appendChild(variantRow);
+        });
+
+        if (item.note) {
+          const note = document.createElement("div");
+          note.className = "staff-note";
+          note.textContent = item.note;
+          row.appendChild(note);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "simple-actions";
+        const addBtn = document.createElement("button");
+        addBtn.className = "btn btn-green";
+        addBtn.type = "button";
+        addBtn.textContent = "+ Tambahkan ke Keranjang";
+        addBtn.addEventListener("click", () => addStaffRequestToCart(item));
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit Dulu";
+        editBtn.addEventListener("click", () => editStaffRequest(item));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "icon-btn danger";
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Hapus";
+        deleteBtn.addEventListener("click", () => deleteStaffRequest(item));
+
+        actions.append(addBtn, editBtn, deleteBtn);
+        row.appendChild(actions);
+        simpleList.appendChild(row);
+      });
+
+      staffRequestList.appendChild(simpleList);
+    }
+
     function renderPendingPage() {
       if (!pendingItemList || !pendingSummary) return;
-      const pendingItems = sortItems(items).filter(item => hasPendingVariant(item));
+      const pendingItems = sortItems(getCartItems()).filter(item => hasPendingVariant(item));
       const totalPcs = pendingItems.reduce((sum, item) => sum + getPendingQty(item), 0);
       const totalModal = pendingItems.reduce((sum, item) => sum + getPendingNominal(item), 0);
 
@@ -4832,7 +5208,7 @@
     function getPendingPrintRows(options = {}) {
       const selectedKeys = options && options.selectedKeys instanceof Set ? options.selectedKeys : null;
       const rows = [];
-      sortItems(items).forEach(rawItem => {
+      sortItems(getCartItems()).forEach(rawItem => {
         const item = normalizeItem(rawItem);
         item.variants.forEach((variant, variantIndex) => {
           if (variant.done) return;
@@ -5353,6 +5729,7 @@
 
     function renderList() {
       renderSupplierList();
+      renderStaffRequestsPage();
       renderPendingPage();
       if (selectedSupplier && pageDetail.classList.contains("active")) {
         renderSupplierDetail(selectedSupplier);
@@ -5363,7 +5740,7 @@
     function syncMasterFromExistingItems() {
       if (!Array.isArray(items) || !items.length) return;
       const data = { itemNames: [], suppliers: [], colors: [] };
-      items.forEach(rawItem => {
+      getCartItems().forEach(rawItem => {
         const item = normalizeItem(rawItem);
         if (item.name) data.itemNames.push(item.name);
         if (item.supplierName) data.suppliers.push(item.supplierName);
@@ -5476,6 +5853,8 @@
         }
       });
     }
+    if (refreshStaffRequestsBtn) refreshStaffRequestsBtn.addEventListener("click", refreshStaffRequests);
+    if (addAllStaffRequestsBtn) addAllStaffRequestsBtn.addEventListener("click", addAllStaffRequestsToCart);
     if (calculateBudgetBtn) calculateBudgetBtn.addEventListener("click", () => renderBudgetPage(true));
     if (clearBudgetBtn) clearBudgetBtn.addEventListener("click", () => {
       if (budgetInput) budgetInput.value = "";
@@ -5499,12 +5878,25 @@
       if (event.target === printModal) closePrintPreview();
     });
 
+
+    async function checkStaffBridgeQueue() {
+      try { await importStaffBridgeQueue(true); }
+      catch (error) { console.warn("Cek kiriman Stafku gagal", error); }
+    }
+
+    window.addEventListener("focus", checkStaffBridgeQueue);
+    window.addEventListener("online", checkStaffBridgeQueue);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) checkStaffBridgeQueue();
+    });
+
     async function init() {
       try {
         db = await openDB();
         await refreshMasterFromSupabase();
         setVariantRows([{ colorName: "", qty: 1 }]);
         updatePricePreview();
+        await importStaffBridgeQueue(false);
         await refreshItems();
         updateSuggestions();
       } catch (error) {
