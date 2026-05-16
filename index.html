@@ -2715,7 +2715,7 @@
         <div class="detail-top">
           <div class="detail-title">
             <h2>Kiriman Staff</h2>
-            <div class="staff-inbox-note">Barang kosong dari aplikasi Stafku masuk ke sini dulu. Tekan <b>Tambahkan ke Keranjang</b> kalau mau masuk ke list belanja manual.</div>
+            <div class="staff-inbox-note">Barang kosong dari aplikasi Stafku dan Risma masuk ke sini dulu. Tekan <b>Tambahkan ke Keranjang</b> kalau mau masuk ke list belanja manual.</div>
           </div>
           <div class="detail-summary" id="staffSummary"></div>
         </div>
@@ -2799,7 +2799,7 @@
     </button>
     <button class="nav-btn" type="button" data-page="staff">
       <span class="nav-icon" aria-hidden="true">📥</span>
-      <span class="nav-label">Staff</span>
+      <span class="nav-label">Inbox</span>
     </button>
     <button class="nav-btn" type="button" data-page="list">
       <span class="nav-icon" aria-hidden="true">🏬</span>
@@ -2911,6 +2911,8 @@
     const STORE_NAME = "items";
     const MASTER_DATA_KEY = "belanja_toko_hijab_master_saran_v1";
     const STAFF_BRIDGE_KEY = "stafku_to_belanjaku_barang_kosong_v1";
+    const TOKO_BRIDGE_KEY = "toko_to_belanjaku_barang_kosong_v1";
+    const STAFF_BRIDGE_KEYS = [STAFF_BRIDGE_KEY, TOKO_BRIDGE_KEY];
     const DEFAULT_UNIT = "pcs";
     const UNSET_SUPPLIER = "Supplier belum diisi";
     const APP_PIN = "123";
@@ -3321,18 +3323,23 @@
 
 
     function readStaffBridgeQueue() {
-      try {
-        const raw = JSON.parse(localStorage.getItem(STAFF_BRIDGE_KEY) || "[]");
-        return Array.isArray(raw) ? raw.filter(Boolean) : [];
-      } catch (error) {
-        console.warn("Gagal baca kiriman Stafku", error);
-        return [];
-      }
+      const out = [];
+      (STAFF_BRIDGE_KEYS || [STAFF_BRIDGE_KEY]).forEach(key => {
+        try {
+          const raw = JSON.parse(localStorage.getItem(key) || "[]");
+          if (Array.isArray(raw)) out.push(...raw.filter(Boolean));
+        } catch (error) {
+          console.warn("Gagal baca kiriman aplikasi", key, error);
+        }
+      });
+      return out;
     }
 
     function clearStaffBridgeQueue() {
-      try { localStorage.removeItem(STAFF_BRIDGE_KEY); }
-      catch (error) { console.warn("Gagal bersihkan kiriman Stafku", error); }
+      (STAFF_BRIDGE_KEYS || [STAFF_BRIDGE_KEY]).forEach(key => {
+        try { localStorage.removeItem(key); }
+        catch (error) { console.warn("Gagal bersihkan kiriman aplikasi", key, error); }
+      });
     }
 
     function normalizeStaffBridgeItem(rawItem) {
@@ -3349,13 +3356,13 @@
         variants,
         unit: DEFAULT_UNIT,
         priority: raw.priority || "Tinggi",
-        note: raw.note || "Dari Stafku - barang kosong",
+        note: raw.note || "Dari aplikasi - barang kosong",
         done: false,
         source: raw.source || "stafku_barang_kosong",
         staffStatus: raw.staffStatus || "inbox",
         staffRequest: raw.staffRequest !== false,
         createdBy: raw.createdBy || "staff",
-        createdByName: raw.createdByName || raw.staffName || "Staff",
+        createdByName: raw.createdByName || raw.staffName || (String(raw.source || "").includes("toko") ? "Risma" : "Staff"),
         createdAt: raw.createdAt || now,
         updatedAt: raw.updatedAt || now
       });
@@ -3380,11 +3387,11 @@
         if (imported) {
           await refreshItems();
           updateSuggestions();
-          if (showMessage) showToast(`${imported} barang dari Stafku masuk halaman Staff`);
+          if (showMessage) showToast(`${imported} barang dari aplikasi masuk halaman Kiriman`);
         }
       } catch (error) {
-        console.warn("Gagal impor kiriman Stafku", error);
-        if (showMessage) showToast("Kiriman Stafku belum masuk, coba refresh");
+        console.warn("Gagal impor kiriman aplikasi", error);
+        if (showMessage) showToast("Kiriman aplikasi belum masuk, coba refresh");
       }
       return imported;
     }
@@ -4141,7 +4148,8 @@
       const item = normalizeItem(rawItem || {});
       const source = String(item.source || "");
       const status = String(item.staffStatus || "").toLowerCase();
-      return source === "stafku_barang_kosong" && status !== "added" && !item.staffAddedAt;
+      const inboxSource = source === "stafku_barang_kosong" || source === "toko_barang_kosong";
+      return inboxSource && status !== "added" && !item.staffAddedAt;
     }
 
     function getCartItems() {
@@ -4986,7 +4994,7 @@
 
       staffRequestList.innerHTML = "";
       if (!requests.length) {
-        staffRequestList.innerHTML = `<div class="empty">Belum ada barang kosong dari Staff bro.</div>`;
+        staffRequestList.innerHTML = `<div class="empty">Belum ada barang kosong dari staff/Risma bro.</div>`;
         return;
       }
 
@@ -5002,12 +5010,13 @@
         head.className = "simple-product-head with-total";
         const headText = document.createElement("div");
         const headLabel = document.createElement("span");
-        headLabel.textContent = "Barang dari Staff";
+        const sourceLabel = "Staff";
+        headLabel.textContent = `Barang dari ${sourceLabel}`;
         const headValue = document.createElement("strong");
         headValue.textContent = item.name || "Tanpa nama";
         const meta = document.createElement("div");
         meta.className = "staff-meta";
-        const staffName = item.createdByName || item.createdBy || "Staff";
+        const staffName = item.createdByName || item.createdBy || sourceLabel;
         const supplierText = getSupplierKey(item) || UNSET_SUPPLIER;
         const dateText = item.createdAt ? new Date(item.createdAt).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "baru saja";
         meta.textContent = `${staffName} • ${supplierText} • ${dateText}`;
@@ -5881,7 +5890,7 @@
 
     async function checkStaffBridgeQueue() {
       try { await importStaffBridgeQueue(true); }
-      catch (error) { console.warn("Cek kiriman Stafku gagal", error); }
+      catch (error) { console.warn("Cek kiriman aplikasi gagal", error); }
     }
 
     window.addEventListener("focus", checkStaffBridgeQueue);
