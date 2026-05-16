@@ -1003,11 +1003,15 @@
 
     .staff-actions-bar {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       padding: 10px 14px 14px;
       border-bottom: 1px solid var(--border);
       background: var(--card);
+    }
+
+    @media (max-width: 360px) {
+      .staff-actions-bar { grid-template-columns: 1fr; }
     }
 
     .staff-card .simple-product-head strong {
@@ -2721,6 +2725,7 @@
         </div>
         <div class="staff-actions-bar">
           <button class="btn btn-light" type="button" id="refreshStaffRequestsBtn">↻ Refresh Kiriman</button>
+          <button class="btn btn-light" type="button" id="printStaffInboxBtn">🖨 Cetak Inbox</button>
           <button class="btn btn-green" type="button" id="addAllStaffRequestsBtn">+ Tambahkan Semua</button>
         </div>
         <div class="list" id="staffRequestList"></div>
@@ -2975,6 +2980,7 @@
     const staffRequestList = document.getElementById("staffRequestList");
     const staffSummary = document.getElementById("staffSummary");
     const refreshStaffRequestsBtn = document.getElementById("refreshStaffRequestsBtn");
+    const printStaffInboxBtn = document.getElementById("printStaffInboxBtn");
     const addAllStaffRequestsBtn = document.getElementById("addAllStaffRequestsBtn");
     const pendingItemList = document.getElementById("pendingItemList");
     const pendingSummary = document.getElementById("pendingSummary");
@@ -2995,6 +3001,7 @@
     const todayText = document.getElementById("todayText");
     const toast = document.getElementById("toast");
     const printerBtn = document.getElementById("printerBtn");
+    const printModalTitle = document.getElementById("printModalTitle");
     const printModal = document.getElementById("printModal");
     const printPreviewText = document.getElementById("printPreviewText");
     const printerStatus = document.getElementById("printerStatus");
@@ -3020,6 +3027,7 @@
     let selectedVariantKeys = new Set();
     let printSelectedVariantKeys = new Set();
     let printUseSelection = false;
+    let printMode = "cart";
     let bluetoothDevice = null;
     let printerCharacteristic = null;
 
@@ -5257,23 +5265,52 @@
             supplier: getSupplierKey(item),
             name: item.name || "Tanpa nama",
             color: variant.colorName || "Tanpa warna",
-            qty: variant.qty
+            qty: variant.qty,
+            source: "cart"
           });
         });
       });
       return rows;
     }
 
+    function getStaffInboxPrintRows(options = {}) {
+      const selectedKeys = options && options.selectedKeys instanceof Set ? options.selectedKeys : null;
+      const rows = [];
+      sortItems(getStaffRequestItems()).forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        item.variants.forEach((variant, variantIndex) => {
+          const key = getVariantSelectionKey(item, variantIndex);
+          if (selectedKeys && !selectedKeys.has(key)) return;
+          rows.push({
+            key,
+            itemId: item.id,
+            variantIndex,
+            supplier: getSupplierKey(item),
+            name: item.name || "Tanpa nama",
+            color: variant.colorName || "Tanpa warna",
+            qty: variant.qty,
+            source: "staffInbox",
+            createdByName: item.createdByName || item.createdBy || "Staff"
+          });
+        });
+      });
+      return rows;
+    }
+
+    function getPrintRows(options = {}) {
+      return printMode === "staffInbox" ? getStaffInboxPrintRows(options) : getPendingPrintRows(options);
+    }
+
     function getActivePrintRows() {
-      return getPendingPrintRows(printUseSelection ? { selectedKeys: printSelectedVariantKeys } : {});
+      return getPrintRows(printUseSelection ? { selectedKeys: printSelectedVariantKeys } : {});
     }
 
     function getEmptyPrintMessage() {
-      return getPendingPrintRows().length ? "Belum ada data dipilih." : "Semua barang sudah selesai.";
+      return getPrintRows().length ? "Belum ada data dipilih." : (printMode === "staffInbox" ? "Inbox kiriman staff kosong." : "Semua barang sudah selesai.");
     }
 
     function initPrintSelection() {
-      const allRows = getPendingPrintRows();
+      const allRows = getPrintRows();
       printSelectedVariantKeys = new Set(allRows.map(row => row.key));
       printUseSelection = true;
     }
@@ -5376,9 +5413,31 @@
       lines.push(printSeparator(width));
     }
 
+    function getPrintModeTitle() {
+      return printMode === "staffInbox" ? "INBOX KIRIMAN STAFF" : "";
+    }
+
+    function getPrintModeDateLine() {
+      try {
+        return new Date().toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      } catch (error) {
+        return new Date().toLocaleString();
+      }
+    }
+
+    function appendPrintModeHeader(lines, width = PRINT_LINE_WIDTH) {
+      const title = getPrintModeTitle();
+      if (!title) return;
+      lines.push(centerText(title, width));
+      lines.push(centerText(getPrintModeDateLine(), width));
+      lines.push(printSeparator(width));
+      lines.push("");
+    }
+
     function makePrintText() {
       const { rows, supplierGroups } = getPrintGroups();
       const lines = [];
+      appendPrintModeHeader(lines, PRINT_LINE_WIDTH);
 
       if (!rows.length) {
         lines.push(getEmptyPrintMessage());
@@ -5412,6 +5471,12 @@
     function makePrintHtml() {
       const { rows, supplierGroups } = getPrintGroups();
       const blocks = [];
+      if (getPrintModeTitle()) {
+        blocks.push(`<span class="print-line supplier">${escapePrintHtml(getPrintModeTitle())}</span>`);
+        blocks.push(`<span class="print-line variant">${escapePrintHtml(getPrintModeDateLine())}</span>`);
+        blocks.push(`<span class="print-line separator">${escapePrintHtml(printSeparator(32))}</span>`);
+        blocks.push('<span class="print-line gap"></span>');
+      }
 
       if (!rows.length) {
         return `<span class="print-line variant">${escapePrintHtml(getEmptyPrintMessage())}</span>`;
@@ -5464,7 +5529,16 @@
     function makePrintBlocks() {
       const { rows, supplierGroups } = getPrintGroups();
       const blocks = [];
-      if (!rows.length) return [{ type: "text", text: getEmptyPrintMessage(), size: "normal", bold: false }];
+      if (getPrintModeTitle()) {
+        blocks.push({ type: "supplier", text: getPrintModeTitle(), size: "large", bold: true, align: "center" });
+        blocks.push({ type: "text", text: getPrintModeDateLine(), size: "normal", bold: false, align: "center" });
+        blocks.push({ type: "separator", text: printSeparator(32), size: "normal", bold: false });
+        blocks.push({ type: "gap" });
+      }
+      if (!rows.length) {
+        blocks.push({ type: "text", text: getEmptyPrintMessage(), size: "normal", bold: false });
+        return blocks;
+      }
 
       [...supplierGroups.entries()].forEach(([supplier, productGroups], supplierIndex) => {
         if (supplierIndex > 0) blocks.push({ type: "gap" });
@@ -5487,14 +5561,14 @@
     }
 
     function renderPrintSelector() {
-      const allRows = getPendingPrintRows();
+      const allRows = getPrintRows();
       const selectedCount = allRows.filter(row => printSelectedVariantKeys.has(row.key)).length;
       const allSelected = allRows.length > 0 && selectedCount === allRows.length;
 
       if (printSelectedInfo) {
         printSelectedInfo.textContent = allRows.length
           ? `Dipilih ${selectedCount} dari ${allRows.length} data. Default: cetak semua.`
-          : "Tidak ada barang pending untuk dicetak.";
+          : (printMode === "staffInbox" ? "Inbox kiriman staff kosong." : "Tidak ada barang pending untuk dicetak.");
       }
 
       if (printToggleAllBtn) {
@@ -5506,7 +5580,7 @@
       printChoiceList.innerHTML = "";
 
       if (!allRows.length) {
-        printChoiceList.innerHTML = '<div class="print-choice-empty">Semua barang sudah selesai.</div>';
+        printChoiceList.innerHTML = `<div class="print-choice-empty">${escapePrintHtml(printMode === "staffInbox" ? "Inbox kiriman staff kosong." : "Semua barang sudah selesai.")}</div>`;
         return;
       }
 
@@ -5531,7 +5605,7 @@
         text.className = "print-choice-main";
         text.textContent = `${row.name} • ${row.color} = ${row.qty} pcs`;
         const meta = document.createElement("span");
-        meta.textContent = row.supplier;
+        meta.textContent = printMode === "staffInbox" ? `${row.supplier} • ${row.createdByName || "Staff"}` : row.supplier;
         text.appendChild(meta);
 
         label.append(checkbox, text);
@@ -5540,7 +5614,7 @@
     }
 
     function toggleAllPrintSelection() {
-      const allRows = getPendingPrintRows();
+      const allRows = getPrintRows();
       if (!allRows.length) return;
       const selectedCount = allRows.filter(row => printSelectedVariantKeys.has(row.key)).length;
       if (selectedCount === allRows.length) {
@@ -5559,7 +5633,8 @@
       const htmlText = makePrintHtml();
 
       return {
-        title: "",
+        title: printMode === "staffInbox" ? "Inbox Kiriman Staff" : "",
+        printModeName: printMode,
         printerName: PRINTER_NAME,
         paperMm: 80,
         format: "raw_preview_text_v2",
@@ -5626,7 +5701,7 @@
     }
 
     function sendNativePrint() {
-      if (printUseSelection && getPendingPrintRows().length && !getActivePrintRows().length) {
+      if (printUseSelection && getPrintRows().length && !getActivePrintRows().length) {
         alert("Pilih minimal satu data yang mau dicetak bro.");
         return;
       }
@@ -5662,7 +5737,9 @@
       updatePrinterStatus(`Dikirim ke Android Studio: ${PRINTER_NAME} • pakai payload preview`);
     }
 
-    function openPrintPreview() {
+    function openPrintPreview(mode = "cart") {
+      printMode = mode === "staffInbox" ? "staffInbox" : "cart";
+      if (printModalTitle) printModalTitle.textContent = printMode === "staffInbox" ? "Preview Inbox Kiriman Staff" : "Preview List Belanja";
       initPrintSelection();
       renderPrintSelector();
       updatePrintPreview();
@@ -5670,9 +5747,15 @@
       printModal.classList.add("show");
     }
 
+    function openStaffInboxPrintPreview() {
+      openPrintPreview("staffInbox");
+    }
+
     function closePrintPreview() {
       printModal.classList.remove("show");
       printUseSelection = false;
+      printMode = "cart";
+      if (printModalTitle) printModalTitle.textContent = "Preview List Belanja";
     }
 
     async function chooseBluetoothPrinter() {
@@ -5890,6 +5973,7 @@
       });
     }
     if (refreshStaffRequestsBtn) refreshStaffRequestsBtn.addEventListener("click", refreshStaffRequests);
+    if (printStaffInboxBtn) printStaffInboxBtn.addEventListener("click", openStaffInboxPrintPreview);
     if (addAllStaffRequestsBtn) addAllStaffRequestsBtn.addEventListener("click", addAllStaffRequestsToCart);
     if (calculateBudgetBtn) calculateBudgetBtn.addEventListener("click", () => renderBudgetPage(true));
     if (clearBudgetBtn) clearBudgetBtn.addEventListener("click", () => {
@@ -5905,7 +5989,7 @@
       if (event.target === masterModal) closeMasterManager();
     });
 
-    if (printerBtn) printerBtn.addEventListener("click", openPrintPreview);
+    if (printerBtn) printerBtn.addEventListener("click", () => openPrintPreview("cart"));
     if (closePrintBtn) closePrintBtn.addEventListener("click", closePrintPreview);
     if (printToggleAllBtn) printToggleAllBtn.addEventListener("click", toggleAllPrintSelection);
     if (selectPrinterBtn) selectPrinterBtn.addEventListener("click", checkAndroidNativePrinter);
